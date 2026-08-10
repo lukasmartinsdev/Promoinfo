@@ -28,8 +28,8 @@ class RecaptchaResult:
 def verify_recaptcha(request) -> RecaptchaResult:
     """Valida Google reCAPTCHA v2 no backend.
 
-    Em desenvolvimento, a aplicação pode usar as chaves públicas de teste do
-    Google. Em produção, a ausência de chaves reais bloqueia o acesso.
+    Em desenvolvimento e na Vercel, a aplicação pode usar as chaves públicas
+    de teste do Google quando nenhum par real estiver configurado.
     """
     secret = getattr(settings, "RECAPTCHA_SECRET_KEY", "").strip()
     site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "").strip()
@@ -43,7 +43,13 @@ def verify_recaptcha(request) -> RecaptchaResult:
         return RecaptchaResult(ok=False, configured=True, error="Marque a opção ‘Não sou um robô’ para continuar.")
 
     # Token exclusivo para testes automatizados locais; nunca é aceito em produção.
-    if getattr(settings, "RECAPTCHA_TEST_MODE", False) and secret == getattr(settings, "RECAPTCHA_TEST_SECRET_KEY", "") and token == "PROMOINFO_TEST_OK":
+    if (
+        settings.DEBUG
+        and getattr(settings, "RECAPTCHA_TEST_MODE", False)
+        and site_key == getattr(settings, "RECAPTCHA_TEST_SITE_KEY", "")
+        and secret == getattr(settings, "RECAPTCHA_TEST_SECRET_KEY", "")
+        and token == "PROMOINFO_TEST_OK"
+    ):
         return RecaptchaResult(ok=True, configured=True, hostname="localhost")
 
     payload = urllib.parse.urlencode({

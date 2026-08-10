@@ -1,10 +1,67 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from .models import Funcionario, UserProfile
+from .security import verify_recaptcha
 from .validators import limpar_cpf, validar_cpf
+
+
+class RecaptchaSettingsTests(SimpleTestCase):
+    def test_vercel_sem_chaves_reais_usa_par_oficial_de_teste(self):
+        from promoinfo.settings import (
+            RECAPTCHA_TEST_SECRET_KEY,
+            RECAPTCHA_TEST_SITE_KEY,
+            _resolve_recaptcha_keys,
+        )
+
+        keys = _resolve_recaptcha_keys(
+            "", "", debug=False, test_mode=False, is_vercel=True
+        )
+
+        self.assertEqual(keys, (RECAPTCHA_TEST_SITE_KEY, RECAPTCHA_TEST_SECRET_KEY))
+
+    def test_chaves_reais_tem_prioridade_na_vercel(self):
+        from promoinfo.settings import _resolve_recaptcha_keys
+
+        keys = _resolve_recaptcha_keys(
+            "site-real", "secret-real", debug=False, test_mode=False, is_vercel=True
+        )
+
+        self.assertEqual(keys, ("site-real", "secret-real"))
+
+    def test_configuracao_parcial_nao_mistura_chave_real_com_sandbox(self):
+        from promoinfo.settings import _resolve_recaptcha_keys
+
+        keys = _resolve_recaptcha_keys(
+            "site-real", "", debug=False, test_mode=False, is_vercel=True
+        )
+
+        self.assertEqual(keys, ("site-real", ""))
+
+
+class RecaptchaSecurityTests(SimpleTestCase):
+    @override_settings(
+        DEBUG=False,
+        RECAPTCHA_TEST_MODE=True,
+        RECAPTCHA_SITE_KEY="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+        RECAPTCHA_SECRET_KEY="6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
+        RECAPTCHA_ALLOWED_HOSTNAMES=[],
+    )
+    @patch("marketplace.security.urllib.request.urlopen", side_effect=OSError)
+    def test_token_interno_nunca_e_aceito_em_producao(self, mocked_urlopen):
+        request = RequestFactory().post(
+            "/", {"g-recaptcha-response": "PROMOINFO_TEST_OK"}
+        )
+
+        result = verify_recaptcha(request)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(result.configured)
+        mocked_urlopen.assert_called_once()
 
 
 class CpfValidatorTests(TestCase):

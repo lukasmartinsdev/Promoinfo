@@ -120,12 +120,21 @@ RECAPTCHA_TEST_MODE = (
     os.getenv("RECAPTCHA_TEST_MODE", "1" if DEBUG else "0") == "1"
 )
 
-RECAPTCHA_SITE_KEY = os.getenv("RECAPTCHA_SITE_KEY", "").strip()
-RECAPTCHA_SECRET_KEY = os.getenv("RECAPTCHA_SECRET_KEY", "").strip()
 
-if RECAPTCHA_TEST_MODE and DEBUG:
-    RECAPTCHA_SITE_KEY = RECAPTCHA_SITE_KEY or RECAPTCHA_TEST_SITE_KEY
-    RECAPTCHA_SECRET_KEY = RECAPTCHA_SECRET_KEY or RECAPTCHA_TEST_SECRET_KEY
+def _resolve_recaptcha_keys(site_key, secret_key, *, debug, test_mode, is_vercel):
+    """Seleciona um par consistente de chaves sem misturar real e sandbox."""
+    if not site_key and not secret_key and ((debug and test_mode) or is_vercel):
+        return RECAPTCHA_TEST_SITE_KEY, RECAPTCHA_TEST_SECRET_KEY
+    return site_key, secret_key
+
+
+RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY = _resolve_recaptcha_keys(
+    os.getenv("RECAPTCHA_SITE_KEY", "").strip(),
+    os.getenv("RECAPTCHA_SECRET_KEY", "").strip(),
+    debug=DEBUG,
+    test_mode=RECAPTCHA_TEST_MODE,
+    is_vercel=os.getenv("VERCEL", "") == "1",
+)
 
 RECAPTCHA_ALLOWED_HOSTNAMES = [
     hostname.strip()
