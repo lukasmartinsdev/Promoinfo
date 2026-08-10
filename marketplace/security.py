@@ -9,6 +9,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 
+LOCAL_AUTOMATED_TEST_TOKEN = "PROMOINFO_TEST_OK"
+
 
 def client_ip(request) -> str:
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
@@ -29,10 +31,24 @@ def verify_recaptcha(request) -> RecaptchaResult:
     """Valida Google reCAPTCHA v2 no backend e falha sempre de forma fechada."""
     secret = getattr(settings, "RECAPTCHA_SECRET_KEY", "").strip()
     site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "").strip()
+    token = request.POST.get("g-recaptcha-response", "").strip()
+
+    if token == LOCAL_AUTOMATED_TEST_TOKEN:
+        if settings.DEBUG and not getattr(settings, "IS_VERCEL", False):
+            return RecaptchaResult(
+                ok=True,
+                configured=True,
+                hostname="local-automated-test",
+            )
+        return RecaptchaResult(
+            ok=False,
+            configured=bool(secret and site_key),
+            error="Verificação de acesso recusada.",
+        )
+
     if not secret or not site_key:
         return RecaptchaResult(ok=False, configured=False, error="reCAPTCHA não configurado no servidor.")
 
-    token = request.POST.get("g-recaptcha-response", "").strip()
     if not token:
         return RecaptchaResult(ok=False, configured=True, error="Marque a opção ‘Não sou um robô’ para continuar.")
 

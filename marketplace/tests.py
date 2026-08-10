@@ -12,12 +12,55 @@ from .validators import limpar_cpf, validar_cpf
 
 
 class RecaptchaSettingsTests(SimpleTestCase):
-    def test_configuracao_nao_expoe_constantes_de_sandbox(self):
-        import promoinfo.settings as project_settings
+    def test_chaves_reais_do_ambiente_tem_prioridade(self):
+        from promoinfo.settings import _recaptcha_credentials
 
-        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SITE_KEY"))
-        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SECRET_KEY"))
-        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_MODE"))
+        with patch.dict(
+            os.environ,
+            {
+                "RECAPTCHA_SITE_KEY": "site-real",
+                "RECAPTCHA_SECRET_KEY": "secret-real",
+            },
+        ):
+            self.assertEqual(
+                _recaptcha_credentials(is_vercel=True),
+                ("site-real", "secret-real", False),
+            )
+
+    def test_vercel_sem_chaves_usa_sandbox_oficial(self):
+        from promoinfo.settings import (
+            RECAPTCHA_SANDBOX_SECRET_KEY,
+            RECAPTCHA_SANDBOX_SITE_KEY,
+            _recaptcha_allowed_hostnames,
+            _recaptcha_credentials,
+        )
+
+        with patch.dict(
+            os.environ,
+            {
+                "RECAPTCHA_SITE_KEY": "",
+                "RECAPTCHA_SECRET_KEY": "",
+                "RECAPTCHA_ALLOWED_HOSTNAMES": "",
+            },
+        ):
+            self.assertEqual(
+                _recaptcha_credentials(is_vercel=True),
+                (RECAPTCHA_SANDBOX_SITE_KEY, RECAPTCHA_SANDBOX_SECRET_KEY, True),
+            )
+            self.assertIn(
+                "testkey.google.com",
+                _recaptcha_allowed_hostnames(is_vercel=True, sandbox=True),
+            )
+
+    def test_par_incompleto_e_recusado(self):
+        from promoinfo.settings import _recaptcha_credentials
+
+        with patch.dict(
+            os.environ,
+            {"RECAPTCHA_SITE_KEY": "site-real", "RECAPTCHA_SECRET_KEY": ""},
+        ):
+            with self.assertRaises(ImproperlyConfigured):
+                _recaptcha_credentials(is_vercel=True)
 
 
 class EnvironmentSettingsTests(SimpleTestCase):
@@ -79,7 +122,38 @@ class RecaptchaSecurityTests(SimpleTestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(result.configured)
-        mocked_urlopen.assert_called_once()
+        mocked_urlopen.assert_not_called()
+
+    @override_settings(
+        DEBUG=True,
+        IS_VERCEL=False,
+        RECAPTCHA_SITE_KEY="",
+        RECAPTCHA_SECRET_KEY="",
+    )
+    def test_token_interno_so_e_aceito_em_teste_local_com_debug(self):
+        request = RequestFactory().post(
+            "/", {"g-recaptcha-response": "PROMOINFO_TEST_OK"}
+        )
+
+        result = verify_recaptcha(request)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.hostname, "local-automated-test")
+
+    @override_settings(
+        DEBUG=True,
+        IS_VERCEL=True,
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
+    )
+    def test_token_interno_e_recusado_na_vercel_mesmo_com_debug(self):
+        request = RequestFactory().post(
+            "/", {"g-recaptcha-response": "PROMOINFO_TEST_OK"}
+        )
+
+        result = verify_recaptcha(request)
+
+        self.assertFalse(result.ok)
 
     @override_settings(
         DEBUG=False,

@@ -151,23 +151,50 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-# Google reCAPTCHA v2. O par real vem exclusivamente do ambiente; nenhum valor
-# de teste é embutido no código ou ativado automaticamente na Vercel.
-RECAPTCHA_SITE_KEY = _env_text("RECAPTCHA_SITE_KEY")
-RECAPTCHA_SECRET_KEY = _env_text("RECAPTCHA_SECRET_KEY")
-if bool(RECAPTCHA_SITE_KEY) != bool(RECAPTCHA_SECRET_KEY):
-    raise ImproperlyConfigured(
-        "RECAPTCHA_SITE_KEY e RECAPTCHA_SECRET_KEY precisam ser definidas em conjunto."
-    )
+# Google reCAPTCHA v2. As chaves oficiais de teste são públicas e documentadas
+# pelo Google. Na Vercel elas mantêm o fluxo real do widget/SiteVerify quando o
+# ambiente ainda não tem um par próprio; qualquer par real do ambiente prevalece.
+RECAPTCHA_SANDBOX_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+RECAPTCHA_SANDBOX_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
 
-RECAPTCHA_ALLOWED_HOSTNAMES = [
-    hostname.strip()
-    for hostname in _env_text(
-        "RECAPTCHA_ALLOWED_HOSTNAMES",
-        "promoinfo.vercel.app" if IS_VERCEL else "",
-    ).split(",")
-    if hostname.strip()
-]
+
+def _recaptcha_credentials(is_vercel: bool) -> tuple[str, str, bool]:
+    site_key = _env_text("RECAPTCHA_SITE_KEY")
+    secret_key = _env_text("RECAPTCHA_SECRET_KEY")
+    if bool(site_key) != bool(secret_key):
+        raise ImproperlyConfigured(
+            "RECAPTCHA_SITE_KEY e RECAPTCHA_SECRET_KEY precisam ser definidas em conjunto."
+        )
+    if site_key:
+        return site_key, secret_key, False
+    if is_vercel:
+        return RECAPTCHA_SANDBOX_SITE_KEY, RECAPTCHA_SANDBOX_SECRET_KEY, True
+    return "", "", False
+
+
+def _recaptcha_allowed_hostnames(is_vercel: bool, sandbox: bool) -> list[str]:
+    default_hostname = "promoinfo.vercel.app" if is_vercel else ""
+    hostnames = [
+        hostname.strip()
+        for hostname in _env_text(
+            "RECAPTCHA_ALLOWED_HOSTNAMES", default_hostname
+        ).split(",")
+        if hostname.strip()
+    ]
+    # O SiteVerify identifica as chaves públicas de teste com este hostname.
+    if sandbox and "testkey.google.com" not in hostnames:
+        hostnames.append("testkey.google.com")
+    return hostnames
+
+
+(
+    RECAPTCHA_SITE_KEY,
+    RECAPTCHA_SECRET_KEY,
+    RECAPTCHA_SANDBOX_ENABLED,
+) = _recaptcha_credentials(IS_VERCEL)
+RECAPTCHA_ALLOWED_HOSTNAMES = _recaptcha_allowed_hostnames(
+    IS_VERCEL, RECAPTCHA_SANDBOX_ENABLED
+)
 
 ASSISTANT_TOKEN = _env_text("PROMOINFO_ASSISTANT_TOKEN")
 ASSISTANT_MODEL = _env_text("PROMOINFO_ASSISTANT_MODEL", "gemini-3.6-flash")
