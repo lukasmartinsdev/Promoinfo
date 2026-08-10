@@ -8,6 +8,7 @@ dependencies = [
   "argon2-cffi>=23.1,<26",
   "google-genai>=2.17,<3",
   "python-dotenv>=1.0,<2",
+  "psycopg[binary]>=3.2,<4",
 ]
 
 [tool.ruff]

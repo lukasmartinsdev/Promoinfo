@@ -84,8 +84,11 @@ if DB_ENGINE == "postgresql":
             "PASSWORD": os.getenv("PROMOINFO_DB_PASSWORD", ""),
             "HOST": os.getenv("PROMOINFO_DB_HOST", ""),
             "PORT": os.getenv("PROMOINFO_DB_PORT", "5432"),
+            "CONN_MAX_AGE": 0,
+            "DISABLE_SERVER_SIDE_CURSORS": True,
             "OPTIONS": {
                 "sslmode": os.getenv("PROMOINFO_DB_SSLMODE", "require"),
+                "prepare_threshold": None,
             },
         }
     }
@@ -104,6 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -131,3 +135,20 @@ RECAPTCHA_ALLOWED_HOSTNAMES = [
     ).split(",")
     if hostname.strip()
 ]
+
+
+# Execução atrás de proxy HTTPS
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = (
+    os.getenv("PROMOINFO_SECURE_COOKIES", "0") == "1"
+)
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+
+SECURE_SSL_REDIRECT = (
+    os.getenv("PROMOINFO_FORCE_HTTPS", "0") == "1"
+)
+
+SECURE_HSTS_SECONDS = int(
+    os.getenv("PROMOINFO_HSTS_SECONDS", "0")
+)
