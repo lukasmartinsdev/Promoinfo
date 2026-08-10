@@ -1,7 +1,8 @@
+import os
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
@@ -17,6 +18,35 @@ class RecaptchaSettingsTests(SimpleTestCase):
         self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SITE_KEY"))
         self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SECRET_KEY"))
         self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_MODE"))
+
+
+class EnvironmentSettingsTests(SimpleTestCase):
+    def test_placeholders_vazios_usam_padrao_seguro(self):
+        from promoinfo.settings import _env_bool, _env_int, _env_text
+
+        with patch.dict(
+            os.environ,
+            {
+                "SESSION_COOKIE_AGE": "",
+                "PROMOINFO_HSTS_SECONDS": "   ",
+                "PROMOINFO_SECURE_COOKIES": "",
+                "PROMOINFO_TIME_ZONE": "",
+            },
+        ):
+            self.assertEqual(_env_int("SESSION_COOKIE_AGE", 1800), 1800)
+            self.assertEqual(_env_int("PROMOINFO_HSTS_SECONDS", 31536000), 31536000)
+            self.assertTrue(_env_bool("PROMOINFO_SECURE_COOKIES", default=True))
+            self.assertEqual(
+                _env_text("PROMOINFO_TIME_ZONE", "America/Sao_Paulo"),
+                "America/Sao_Paulo",
+            )
+
+    def test_inteiro_invalido_falha_com_mensagem_da_variavel(self):
+        from promoinfo.settings import _env_int
+
+        with patch.dict(os.environ, {"SESSION_COOKIE_AGE": "valor-invalido"}):
+            with self.assertRaisesMessage(ImproperlyConfigured, "SESSION_COOKIE_AGE"):
+                _env_int("SESSION_COOKIE_AGE", 1800)
 
 
 class RecaptchaSecurityTests(SimpleTestCase):
