@@ -1,0 +1,1 @@
+As imagens importadas pelo sincronizador serão salvas nesta pasta.

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff5a00">
+  <meta name="description" content="Catálogo de produtos e ofertas de lojas físicas da PromoInfo Mix.">
+  <title>Catálogo | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="catalog-page-v3">
+    <section class="catalog-hero-v3">
+      <div class="container catalog-hero-inner-v3">
+        <div><span class="section-kicker light">CATÁLOGO PROMOINFO MIX</span><h1>Um produto. Todas as ofertas.</h1><p>Busque por produto, marca, loja ou categoria. Cada modelo aparece uma única vez, com as variações e vendedores organizados dentro da página do produto.</p></div>
+        <div class="catalog-hero-stats-v3"><article><strong id="productCount">0</strong><span>produtos únicos</span></article><article><strong id="offerCount">0</strong><span>ofertas cadastradas</span></article><article><strong id="storeCount">99</strong><span>lojas no diretório</span></article></div>
+      </div>
+    </section>
+
+    <section class="section catalog-section-v3">
+      <div class="container catalog-layout-v3">
+        <aside class="catalog-sidebar-v3">
+          <div class="filter-head-v3"><strong>Filtros</strong><button type="button" id="clearFilters">Limpar</button></div>
+          <label class="catalog-search-v3"><span data-icon="search"></span><input id="catalogSearch" type="search" placeholder="Buscar produto, marca ou loja"></label>
+          <div class="filter-group-v3"><strong>Categorias</strong><div id="categoryFilters" class="filter-list-v3"></div></div>
+          <div class="filter-group-v3"><strong>Marcas</strong><div id="brandFilters" class="filter-list-v3 filter-list-scroll-v3"></div></div>
+          <div class="filter-group-v3"><strong>Unidades</strong><div id="unitFilters" class="filter-list-v3"></div></div>
+        </aside>
+
+        <div class="catalog-results-v3">
+          <div class="catalog-results-head-v3"><div><span id="resultsLabel">Produtos encontrados</span><small id="catalogMetadata"></small></div><select id="catalogSort"><option value="relevance">Mais relevantes</option><option value="offers-desc">Mais lojas</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="name">Nome A–Z</option></select></div>
+          <div id="activeFilters" class="active-filters-v3"></div>
+          <div class="product-grid product-grid-catalog-v3" id="productGrid"></div>
+          <div class="pagination-v3" id="pagination"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+  <script src="catalogo-importado.js"></script>
+  <script src="data.js"></script>
+  <script src="marketplace.js"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="catalog.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff5a00">
+  <meta name="description" content="Cadastro e acesso de lojistas da PromoInfo Mix.">
+  <title>Área do lojista | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="/styles.css?v=7">{% if recaptcha_enabled %}<script>window.promoinfoRecaptchaWidgets={};window.promoinfoRecaptchaLoaded=function(){window.promoinfoRecaptchaWidgets.login=grecaptcha.render("merchantLoginRecaptcha",{sitekey:"{{ recaptcha_site_key }}",theme:"light"});window.promoinfoRecaptchaWidgets.register=grecaptcha.render("merchantRegisterRecaptcha",{sitekey:"{{ recaptcha_site_key }}",theme:"light"});};</script><script src="https://www.google.com/recaptcha/api.js?onload=promoinfoRecaptchaLoaded&render=explicit&hl=pt-BR" async defer></script>{% endif %}
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="merchant-auth-page">
+    <section class="merchant-auth-hero">
+      <div class="container merchant-auth-hero-grid">
+        <div>
+          <span class="section-kicker light">ÁREA DO LOJISTA</span>
+          <h1>Cadastre sua loja e anuncie seus produtos.</h1>
+          <p>Crie o perfil da sua operação, envie sua logo e gerencie anúncios em um painel próprio.</p>
+          <div class="merchant-benefits">
+            <span><i data-icon="store"></i>Perfil da loja no diretório</span>
+            <span><i data-icon="tag"></i>Cadastro de produtos e preços</span>
+            <span><i data-icon="shield"></i>Publicação após aprovação</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section merchant-auth-section">
+      <div class="container merchant-auth-shell">
+        <aside class="merchant-auth-aside">
+          <span class="section-kicker">COMECE AGORA</span>
+          <h2>Uma vitrine digital para sua loja física.</h2>
+          <p>O cadastro passa por aprovação antes de aparecer no diretório. Depois, cada anúncio enviado também recebe seu próprio status.</p>
+          <ol class="merchant-steps">
+            <li><b>1</b><div><strong>Cadastre a loja</strong><small>Informe responsável, localização e contatos.</small></div></li>
+            <li><b>2</b><div><strong>Aguarde aprovação</strong><small>O administrador revisa os dados da operação.</small></div></li>
+            <li><b>3</b><div><strong>Publique produtos</strong><small>Cadastre imagens, preços e condições.</small></div></li>
+          </ol>
+          <a class="admin-access-link" href="/area-restrita/"><span data-icon="shield"></span>Acesso administrativo</a>
+        </aside>
+
+        <div class="merchant-auth-card">
+          <div class="auth-tabs" role="tablist">
+            <button class="active" type="button" data-auth-tab="login">Entrar</button>
+            <button type="button" data-auth-tab="register">Cadastrar loja</button>
+          </div>
+
+          <div id="authFeedback" class="form-feedback" role="status" aria-live="polite"></div>
+
+          <form id="merchantLoginForm" class="merchant-form auth-panel active" data-auth-panel="login">{% csrf_token %}<input class="security-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="form-title"><h2>Acessar painel</h2><p>Entre com o e-mail e a senha cadastrados.</p></div>
+            <label>E-mail<input name="email" type="email" autocomplete="email" required placeholder="lojista@email.com"></label>
+            <label>Senha<input name="password" type="password" autocomplete="current-password" required placeholder="Sua senha"></label>{% if recaptcha_enabled %}<div class="merchant-recaptcha"><div id="merchantLoginRecaptcha"></div></div>{% else %}<p class="merchant-security-hint">A verificação de acesso está temporariamente indisponível.</p>{% endif %}
+            <button class="btn btn-primary full" type="submit">Entrar no painel <span data-icon="arrow"></span></button>
+          </form>
+
+          <form id="merchantRegisterForm" class="merchant-form auth-panel" data-auth-panel="register">{% csrf_token %}<input class="security-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="form-title"><h2>Cadastrar loja</h2><p>Campos marcados com * são obrigatórios.</p></div>
+            <div class="form-grid-2">
+              <label>Responsável *<input name="responsibleName" required placeholder="Nome completo"></label>
+              <label>Nome da loja *<input name="tradeName" required placeholder="Nome fantasia"></label>
+              <label>Razão social<input name="legalName" placeholder="Razão social"></label>
+              <label>CPF ou CNPJ *<input name="document" required inputmode="numeric" placeholder="Somente números"></label>
+              <label>E-mail *<input name="email" type="email" autocomplete="email" required placeholder="contato@loja.com"></label>
+              <label>Telefone *<input name="phone" required inputmode="tel" placeholder="(21) 00000-0000"></label>
+              <label>WhatsApp<input name="whatsapp" inputmode="tel" placeholder="Se for diferente"></label>
+              <label>Segmento *<select name="segment" required><option value="">Selecione</option><option>Informática e componentes</option><option>Celulares e acessórios</option><option>Games e consoles</option><option>Assistência técnica</option><option>Eletrônicos</option><option>Redes e segurança</option><option>Outro segmento</option></select></label>
+              <label>Unidade *<select name="unit" required><option value="">Selecione</option><option>Barra</option><option>Centro</option><option>Norte</option><option>Tijuca</option></select></label>
+              <label>Loja, stand e andar *<input name="location" required placeholder="Ex.: Stand 25 - Térreo"></label>
+              <label>Senha *<input name="password" type="password" autocomplete="new-password" minlength="10" required placeholder="Mínimo de 10 caracteres"></label>
+              <label>Confirmar senha *<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="10" required placeholder="Repita a senha"></label>
+            </div>
+            <label>Descrição da loja<textarea name="description" rows="4" placeholder="Apresente os produtos, serviços e diferenciais da sua loja."></textarea></label>
+            <label class="upload-field">Logo da loja<input id="merchantLogoInput" name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><span><i data-icon="plus"></i>Selecionar imagem</span><small>PNG, JPG, WebP ou SVG. A imagem será otimizada antes de salvar.</small></label>
+            <div id="merchantLogoPreview" class="upload-preview" hidden></div>
+            <label class="check-field"><input name="terms" type="checkbox" required><span>Confirmo que os dados informados são verdadeiros e aceito os Termos de Uso e a Política de Privacidade.</span></label>
+            {% if recaptcha_enabled %}<div class="merchant-recaptcha"><div id="merchantRegisterRecaptcha"></div></div>{% endif %}<button class="btn btn-primary full" type="submit">Criar cadastro <span data-icon="arrow"></span></button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+  <script src="/catalogo-importado.js"></script>
+  <script src="/data.js"></script>
+  <script src="/marketplace.js"></script>
+  <script src="/shared.js?v=7"></script>
+  <script src="/lojista.js?v=7"></script>
+</body>
+</html>

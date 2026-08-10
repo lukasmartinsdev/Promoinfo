@@ -1,0 +1,120 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff5a00">
+  <meta name="description" content="Cadastro de funcionários com validação matemática de CPF.">
+  <title>Cadastro de Funcionário | PromoInfo Mix</title>
+  <link rel="icon" href="/assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/area-restrita.css">
+  <link rel="stylesheet" href="/funcionarios.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+
+  <main class="employee-page">
+    <div class="employee-topbar">
+      <a href="{% url 'area_restrita' %}">← Voltar à área restrita</a>
+      <a href="{% url 'listar_funcionarios' %}">Ver funcionários cadastrados</a>
+    </div>
+
+    <section class="employee-shell" aria-labelledby="employeeTitle">
+      <div class="employee-copy">
+        <span class="employee-kicker">GESTÃO DE PESSOAS</span>
+        <h1 id="employeeTitle">Cadastrar funcionário</h1>
+        <p>O registro somente será salvo quando o CPF informado passar pela validação matemática dos dois dígitos verificadores.</p>
+
+        <div class="employee-security">
+          <span aria-hidden="true">✓</span>
+          <div>
+            <strong>Validação antes de salvar</strong>
+            <small>CPFs incompletos, repetidos ou matematicamente inválidos são recusados.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="employee-card">
+        {% if messages %}
+          <div class="employee-messages" aria-live="polite">
+            {% for message in messages %}
+              <div class="employee-alert employee-alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="POST" class="employee-form" novalidate>
+          {% csrf_token %}
+
+          <label for="id_nome">
+            Nome
+            <input
+              id="id_nome"
+              name="nome"
+              type="text"
+              maxlength="150"
+              autocomplete="name"
+              value="{{ form_data.nome }}"
+              placeholder="Nome completo"
+              required
+            >
+          </label>
+
+          <label for="id_cpf">
+            CPF
+            <input
+              id="id_cpf"
+              name="cpf"
+              type="text"
+              maxlength="14"
+              inputmode="numeric"
+              autocomplete="off"
+              value="{{ form_data.cpf }}"
+              placeholder="000.000.000-00"
+              required
+            >
+          </label>
+
+          <label for="id_cargo">
+            Cargo
+            <input
+              id="id_cargo"
+              name="cargo"
+              type="text"
+              maxlength="100"
+              value="{{ form_data.cargo }}"
+              placeholder="Ex.: Analista de Sistemas"
+              required
+            >
+          </label>
+
+          <button type="submit">Cadastrar funcionário</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooter"></div>
+
+  <script src="/data.js"></script>
+  <script src="/marketplace.js"></script>
+  <script src="/shared.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      window.PromoUI?.renderHeader('');
+      window.PromoUI?.renderFooter();
+
+      const cpf = document.getElementById('id_cpf');
+      cpf?.addEventListener('input', () => {
+        const digits = cpf.value.replace(/\D/g, '').slice(0, 11);
+        cpf.value = digits
+          .replace(/^(\d{3})(\d)/, '$1.$2')
+          .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+          .replace(/\.(\d{3})(\d)/, '.$1-$2');
+      });
+    });
+  </script>
+</body>
+</html>

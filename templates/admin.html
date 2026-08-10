@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071b35">
+  <meta name="description" content="Administração local do marketplace PromoInfo Mix.">
+  <title>Administração | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body class="admin-body">
+  <div id="siteHeader"></div>
+  <main class="admin-page">
+    <section id="adminDashboard">
+      <div class="admin-topbar">
+        <div class="container admin-topbar-inner"><div><span class="section-kicker light">ADMINISTRAÇÃO</span><h1>Controle do marketplace</h1><p>Gestão de lojistas, produtos e conteúdo publicado.</p></div><div><a class="btn btn-glass" href="index.html" target="_blank">Abrir site <span data-icon="external"></span></a><a class="btn btn-light" href="/area-restrita/sair/">Sair</a></div></div>
+      </div>
+
+      <section class="section admin-section">
+        <div class="container admin-layout">
+          <aside class="admin-nav">
+            <nav>
+              <button class="active" type="button" data-admin-view="overview"><span data-icon="home"></span>Visão geral</button>
+              <button type="button" data-admin-view="merchants"><span data-icon="store"></span>Lojistas <b id="pendingMerchantBadge">0</b></button>
+              <button type="button" data-admin-view="products"><span data-icon="tag"></span>Produtos <b id="pendingProductBadge">0</b></button>
+              <button type="button" data-admin-view="backup"><span data-icon="refresh"></span>Backup</button>
+              <a href="/area-restrita/seguranca/"><span data-icon="shield"></span>Segurança</a>
+            </nav>
+            <div class="local-storage-note"><span data-icon="info"></span><p>Mantenha backups periódicos dos cadastros e anúncios administrados.</p></div>
+          </aside>
+
+          <div class="admin-content">
+            <div id="adminFeedback" class="form-feedback" role="status" aria-live="polite"></div>
+
+            <section class="admin-view active" data-admin-section="overview">
+              <div class="admin-metrics" id="adminMetrics"></div>
+              <div class="panel-card">
+                <div class="panel-card-head"><div><span class="section-kicker">PENDÊNCIAS</span><h2>Itens aguardando revisão</h2></div></div>
+                <div id="adminPendingSummary"></div>
+              </div>
+            </section>
+
+            <section class="admin-view" data-admin-section="merchants">
+              <div class="panel-card">
+                <div class="panel-card-head"><div><span class="section-kicker">CADASTROS</span><h2>Lojistas</h2><p>Aprove ou recuse os perfis enviados, controle o login e defina o perfil de acesso de cada conta.</p></div></div>
+                <div class="panel-toolbar"><label><span data-icon="search"></span><input id="adminMerchantSearch" type="search" placeholder="Buscar loja ou responsável"></label><select id="adminMerchantStatus"><option value="">Todos os status</option><option value="pending">Em análise</option><option value="approved">Aprovado</option><option value="rejected">Recusado</option></select></div>
+                <div id="adminMerchantList"></div>
+              </div>
+            </section>
+
+            <section class="admin-view" data-admin-section="products">
+              <div class="panel-card">
+                <div class="panel-card-head"><div><span class="section-kicker">ANÚNCIOS</span><h2>Produtos</h2><p>Somente anúncios aprovados de lojas aprovadas entram no catálogo.</p></div></div>
+                <div class="panel-toolbar"><label><span data-icon="search"></span><input id="adminProductSearch" type="search" placeholder="Buscar produto ou loja"></label><select id="adminProductStatus"><option value="">Todos os status</option><option value="pending">Em análise</option><option value="approved">Aprovado</option><option value="rejected">Recusado</option></select></div>
+                <div id="adminProductList"></div>
+              </div>
+            </section>
+
+            <section class="admin-view" data-admin-section="backup">
+              <div class="panel-card">
+                <div class="panel-card-head"><div><span class="section-kicker">PORTABILIDADE</span><h2>Backup local</h2><p>Exporte cadastros e produtos para um arquivo JSON ou restaure um backup existente.</p></div></div>
+                <div class="backup-actions-grid">
+                  <article><span data-icon="refresh"></span><h3>Exportar dados</h3><p>Baixa um arquivo com lojistas, produtos, status e configurações do marketplace.</p><button class="btn btn-primary" id="exportBackupBtn" type="button">Baixar backup</button></article>
+                  <article><span data-icon="plus"></span><h3>Importar dados</h3><p>Substitui os dados locais pelo conteúdo de um backup válido.</p><label class="btn btn-secondary">Selecionar backup<input id="importBackupInput" type="file" accept="application/json,.json" hidden></label></article>
+                  <article class="danger-zone"><span data-icon="info"></span><h3>Limpar dados locais</h3><p>Remove os dados operacionais armazenados neste ambiente.</p><button class="btn btn-danger" id="clearLocalDataBtn" type="button">Apagar tudo</button></article>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+  <script src="catalogo-importado.js"></script>
+  <script src="data.js"></script>
+  <script src="marketplace.js"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

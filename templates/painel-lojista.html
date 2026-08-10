@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff5a00">
+  <meta name="description" content="Painel do lojista da PromoInfo Mix.">
+  <title>Painel do lojista | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body class="merchant-panel-body">
+  <div id="siteHeader"></div>
+  <main class="merchant-panel-page">
+    <section class="panel-topbar">
+      <div class="container panel-topbar-inner">
+        <div><span class="section-kicker light">PAINEL DO LOJISTA</span><h1 id="panelStoreName">Minha loja</h1><p id="panelStoreLocation"></p></div>
+        <div class="panel-top-actions"><a class="btn btn-glass" href="index.html" target="_blank">Ver marketplace <span data-icon="external"></span></a><button class="btn btn-light" id="merchantLogoutBtn" type="button">Sair</button></div>
+      </div>
+    </section>
+
+    <section class="section panel-section">
+      <div class="container merchant-panel-layout">
+        <aside class="merchant-panel-nav">
+          <div id="merchantMiniProfile" class="merchant-mini-profile"></div>
+          <nav>
+            <button class="active" type="button" data-panel-view="overview"><span data-icon="home"></span>Visão geral</button>
+            <button type="button" data-panel-view="products"><span data-icon="tag"></span>Meus produtos</button>
+            <button type="button" data-panel-view="profile"><span data-icon="store"></span>Dados da loja</button>
+            <button type="button" data-panel-view="security"><span data-icon="shield"></span>Segurança</button>
+          </nav>
+          <div class="local-storage-note"><span data-icon="info"></span><p>Mantenha seus dados e anúncios atualizados e faça backup quando necessário.</p></div>
+        </aside>
+
+        <div class="merchant-panel-content">
+          <div id="panelFeedback" class="form-feedback" role="status" aria-live="polite"></div>
+
+          <section class="panel-view active" data-panel-section="overview">
+            <div id="merchantStatusBanner"></div>
+            <div class="panel-metrics" id="merchantMetrics"></div>
+            <div class="panel-card">
+              <div class="panel-card-head"><div><span class="section-kicker">ATIVIDADE RECENTE</span><h2>Últimos anúncios</h2></div><button class="btn btn-primary" type="button" data-open-product-form>Novo produto <span data-icon="plus"></span></button></div>
+              <div id="recentProducts"></div>
+            </div>
+          </section>
+
+          <section class="panel-view" data-panel-section="products">
+            <div class="panel-card">
+              <div class="panel-card-head"><div><span class="section-kicker">CATÁLOGO DA LOJA</span><h2>Meus produtos</h2><p>Todo produto novo ou editado volta para análise.</p></div><button class="btn btn-primary" type="button" data-open-product-form>Novo produto <span data-icon="plus"></span></button></div>
+              <div class="panel-toolbar"><label><span data-icon="search"></span><input id="merchantProductSearch" type="search" placeholder="Buscar produto"></label><select id="merchantProductStatusFilter"><option value="">Todos os status</option><option value="pending">Em análise</option><option value="approved">Aprovado</option><option value="rejected">Recusado</option></select></div>
+              <div id="merchantProductList"></div>
+            </div>
+          </section>
+
+          <section class="panel-view" data-panel-section="profile">
+            <div class="panel-card">
+              <div class="panel-card-head"><div><span class="section-kicker">PERFIL DA LOJA</span><h2>Dados cadastrais</h2><p>Alterações em um cadastro recusado reenviam a loja para análise.</p></div></div>
+              <form id="merchantProfileForm" class="merchant-form">
+                <div class="profile-logo-editor"><div id="profileLogoPreview" class="profile-logo-preview"></div><label class="btn btn-secondary">Alterar logo<input id="profileLogoInput" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label></div>
+                <div class="form-grid-2">
+                  <label>Responsável *<input name="responsibleName" required></label>
+                  <label>Nome da loja *<input name="tradeName" required></label>
+                  <label>Razão social<input name="legalName"></label>
+                  <label>CPF ou CNPJ *<input name="document" required inputmode="numeric"></label>
+                  <label>E-mail *<input name="email" type="email" required></label>
+                  <label>Telefone *<input name="phone" required inputmode="tel"></label>
+                  <label>WhatsApp<input name="whatsapp" inputmode="tel"></label>
+                  <label>Segmento *<select name="segment" required><option>Informática e componentes</option><option>Celulares e acessórios</option><option>Games e consoles</option><option>Assistência técnica</option><option>Eletrônicos</option><option>Redes e segurança</option><option>Outro segmento</option></select></label>
+                  <label>Unidade *<select name="unit" required><option>Barra</option><option>Centro</option><option>Norte</option><option>Tijuca</option></select></label>
+                  <label>Loja, stand e andar *<input name="location" required></label>
+                </div>
+                <label>Descrição<textarea name="description" rows="5"></textarea></label>
+                <button class="btn btn-primary" type="submit">Salvar alterações</button>
+              </form>
+            </div>
+          </section>
+
+          <section class="panel-view" data-panel-section="security">
+            <div class="panel-card narrow-card">
+              <div class="panel-card-head"><div><span class="section-kicker">SEGURANÇA</span><h2>Alterar senha</h2><p>Use pelo menos 8 caracteres.</p></div></div>
+              <form id="merchantPasswordForm" class="merchant-form">
+                <label>Senha atual<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+                <label>Nova senha<input name="newPassword" type="password" autocomplete="new-password" minlength="8" required></label>
+                <label>Confirmar nova senha<input name="newPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required></label>
+                <button class="btn btn-primary" type="submit">Atualizar senha</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="product-editor" id="productEditor" aria-hidden="true">
+    <button class="selection-backdrop" type="button" data-close-product-editor aria-label="Fechar cadastro"></button>
+    <aside class="product-editor-panel">
+      <div class="selection-head"><div><span class="section-kicker">ANÚNCIO DE PRODUTO</span><h2 id="productEditorTitle">Novo produto</h2><p>O anúncio será enviado para análise.</p></div><button class="drawer-close" type="button" data-close-product-editor aria-label="Fechar"><span data-icon="x"></span></button></div>
+      <div id="productFormFeedback" class="form-feedback" role="status" aria-live="polite"></div>
+      <form id="merchantProductForm" class="merchant-form product-form">
+        <input type="hidden" name="productId">
+        <label>Imagem do produto *<input id="productImageInput" type="file" accept="image/png,image/jpeg,image/webp" data-image-field></label>
+        <div id="productImagePreview" class="product-image-preview"><img src="assets/hero-products-main.svg" alt="Prévia do produto"></div>
+        <div class="form-grid-2">
+          <label>Nome do produto *<input name="name" required placeholder="Ex.: Notebook Lenovo IdeaPad"></label>
+          <label>Marca *<select name="brand" id="productBrand" required></select></label>
+          <label>Categoria *<select name="category" id="productCategory" required></select></label>
+          <label>Modelo ou versão<input name="model" placeholder="Ex.: 15ALC6, 8GB, 256GB"></label>
+          <label>SKU ou código<input name="sku" placeholder="Código interno"></label>
+          <label>Preço à vista *<input name="price" inputmode="decimal" required placeholder="1999,90"></label>
+          <label>Parcelamento<input name="installment" placeholder="Ex.: 10x de R$ 219,90"></label>
+          <label>Estoque ou disponibilidade<input name="stock" placeholder="Ex.: Pronta entrega"></label>
+          <label>Garantia<input name="warranty" placeholder="Ex.: 12 meses"></label>
+          <label class="check-field inline-check"><input name="active" type="checkbox" checked><span>Anúncio ativo após aprovação</span></label>
+        </div>
+        <label>Descrição e especificações<textarea name="description" rows="6" placeholder="Descreva características, conteúdo da embalagem e informações importantes."></textarea></label>
+        <div class="editor-actions"><button class="btn btn-secondary" type="button" data-close-product-editor>Cancelar</button><button class="btn btn-primary" type="submit">Enviar para análise</button></div>
+      </form>
+    </aside>
+  </div>
+
+  <div id="siteFooter"></div>
+  <script src="catalogo-importado.js"></script>
+  <script src="data.js"></script>
+  <script src="marketplace.js"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="painel-lojista.js"></script>
+</body>
+</html>

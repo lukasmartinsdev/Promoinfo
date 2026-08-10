@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071b35">
+  <meta name="description" content="Monte seu PC com peças compatíveis e compare lojas da PromoInfo Mix.">
+  <title>Monte seu PC | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body class="builder-body">
+  <div id="siteHeader"></div>
+  <main>
+    <section class="builder-hero">
+      <div class="container builder-hero-inner">
+        <div><span class="section-kicker light">MONTE SEU PC</span><h1>Escolha as peças. A PromoInfo encontra as lojas.</h1><p>Seleção guiada, compatibilidade automática e comparação de ofertas publicadas por lojas físicas.</p></div>
+        <div class="builder-highlights"><span><i data-icon="check"></i>Compatibilidade automática</span><span><i data-icon="bolt"></i>Consumo estimado</span><span><i data-icon="store"></i>Lojas reais</span></div>
+      </div>
+    </section>
+
+    <section class="builder-page-section">
+      <div class="container builder-workspace">
+        <section class="configuration-panel">
+          <div class="configuration-toolbar">
+            <div><span class="configuration-label">CONFIGURAÇÃO</span><input id="buildName" value="Meu PC PromoInfo" aria-label="Nome da configuração"></div>
+            <div class="toolbar-actions"><button type="button" id="saveBuildBtn"><span data-icon="check"></span>Salvar</button><button type="button" id="resetBuildBtn"><span data-icon="refresh"></span>Limpar</button></div>
+          </div>
+          <div class="builder-progress-inline"><div><span id="progressLabel">0 de 6 componentes obrigatórios</span><strong id="progressPercent">0%</strong></div><div class="progress-track"><span id="progressFill"></span></div></div>
+          <div class="config-list" id="configList"></div>
+        </section>
+
+        <aside class="build-summary-card">
+          <div class="summary-heading"><div><small>RESUMO DO BUILD</small><h2 id="summaryBuildName">Meu PC PromoInfo</h2></div><span class="summary-count" id="summaryCount">0/7</span></div>
+          <div class="compatibility-status" id="compatibilityStatus"><span data-icon="shield"></span><div><strong>Pronto para começar</strong><small>Escolha o processador para liberar a compatibilidade.</small></div></div>
+          <div class="summary-prices"><div><small>Total estimado</small><strong id="buildTotal">R$ 0,00</strong></div><div><small>Peças escolhidas</small><strong id="chosenCount">0</strong></div></div>
+          <div class="energy-card">
+            <div class="energy-head"><span><i data-icon="bolt"></i>Consumo estimado</span><strong><b id="buildWatts">0</b> W / <b id="psuCapacity">—</b> W</strong></div>
+            <div class="energy-track"><span id="energyFill"></span></div>
+            <small id="energyHint">A recomendação de fonte aparecerá conforme você selecionar as peças.</small>
+          </div>
+          <div class="summary-selected" id="summarySelected"></div>
+          <button class="btn btn-primary full" id="compareBuildBtn" type="button">Comparar peças nas lojas</button>
+          <button class="btn btn-secondary full" id="requestQuoteBtn" type="button">Solicitar orçamento do PC</button>
+          <p class="summary-note">Os preços são estimativas com base nas ofertas cadastradas. Confirme estoque e condições diretamente com cada loja.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div class="selection-drawer" id="selectionDrawer" aria-hidden="true">
+    <button class="selection-backdrop" type="button" data-close-selection aria-label="Fechar seleção"></button>
+    <aside class="selection-panel">
+      <div class="selection-head"><div><span class="section-kicker">ESCOLHA A PEÇA</span><h2 id="selectionTitle">Processador</h2><p id="selectionSubtitle">Opções compatíveis com a configuração atual.</p></div><button class="drawer-close" type="button" data-close-selection aria-label="Fechar"><span data-icon="x"></span></button></div>
+      <div class="selection-filters"><label><span data-icon="search"></span><input id="optionSearch" placeholder="Buscar opção"></label><select id="optionSort"><option value="price">Menor preço</option><option value="name">Nome A–Z</option></select></div>
+      <div class="option-grid" id="optionGrid"></div>
+    </aside>
+  </div>
+
+  <div id="siteFooter"></div>
+  <script src="catalogo-importado.js"></script>
+  <script src="data.js"></script>
+  <script src="marketplace.js"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="builder.js"></script>
+</body>
+</html>

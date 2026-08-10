@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ff5a00">
+  <title>Produto | PromoInfo Mix</title>
+  <link rel="icon" href="assets/promoinfo-logo.png">
+  <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="product-page">
+    <div class="container breadcrumb" id="breadcrumb"></div>
+    <section class="container product-detail-card" id="productDetail"></section>
+    <section class="section offers-section">
+      <div class="container">
+        <div class="section-head"><div><span class="section-kicker">COMPARE AS LOJAS</span><h2>Ofertas disponíveis</h2><p>O menor preço permanece identificado, mesmo quando existe anúncio patrocinado.</p></div><div class="offer-sort"><label>Ordenar por<select id="offerSort"><option value="price">Menor preço</option><option value="unit">Unidade</option><option value="store">Nome da loja</option></select></label></div></div>
+        <div id="sponsoredOffer"></div>
+        <div class="offers-grid" id="offersGrid"></div>
+      </div>
+    </section>
+    <section class="section section-soft">
+      <div class="container related-wrap">
+        <div class="section-head"><div><span class="section-kicker">VOCÊ TAMBÉM PODE COMPARAR</span><h2>Produtos relacionados</h2></div></div>
+        <div class="product-grid related-grid" id="relatedProducts"></div>
+      </div>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+  <script src="catalogo-importado.js"></script>
+  <script src="data.js"></script>
+  <script src="marketplace.js"></script>
+  <script src="shared.js?v=4"></script>
+  <script src="product.js"></script>
+</body>
+</html>

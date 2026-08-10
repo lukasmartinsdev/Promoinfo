@@ -1,0 +1,28 @@
+FONTES E CRITÉRIOS — PROMOINFO MIX
+
+Dados de apresentação
+- Produtos, ofertas, lojas, stands, unidades, preços, telefones e links utilizados no protótipo foram organizados a partir de páginas públicas do portal PromoInfo fornecidas no projeto anterior.
+- Endereços e horários das unidades seguem a página pública comercial da PromoInfo.
+- A disponibilidade e as condições devem ser confirmadas diretamente com o lojista.
+
+Fontes institucionais consultadas
+https://www.promoinfo.com.br/
+https://www.promoinfo.com.br/alugueseustand
+https://www.promoinfo.com.br/lojas/pesquisar
+https://www.promoinfo.com.br/lojas/buscar/3
+https://www.promoinfo.com.br/lojas/buscar/4
+https://www.promoinfo.com.br/lojas/buscar/10
+https://www.promoinfo.com.br/lojas/buscar/11
+
+Referência de experiência do configurador
+https://www.pichau.com.br/monte-seu-pc
+
+Observação
+A página "Monte seu PC" adota princípios de UX de configuradores guiados — etapas, componentes obrigatórios, compatibilidade, consumo e resumo persistente — sem copiar código ou identidade visual de terceiros.
+
+
+REVISÃO VISUAL 04/08/2026
+- Referência pública consultada: https://www.promoinfo.com.br/
+- A faixa de lojas usa imagens públicas exibidas no site oficial (arquivos em /adm/img).
+- As fotografias do novo hero são produtos já presentes no catálogo local do projeto.
+- Todas as 38 marcas existentes em assets/brands passaram a ser exibidas; marcas sem produto publicado são informativas e não abrem catálogo vazio.

@@ -1,0 +1,16 @@
+﻿.env
+.env.local
+.env.production
+.venv/
+venv/
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+*.backup*
+*.bak
+.pytest_cache/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
