@@ -317,13 +317,13 @@
     root.className = 'promo-assistant';
     root.innerHTML = `
       <button class="promo-assistant-trigger promo-assistant-trigger-face" type="button" aria-expanded="false" aria-controls="promoAssistantPanel" title="Fale com a Ana" aria-label="Abrir conversa com a Ana, Assistente PromoInfo">
-        <span class="promo-assistant-face"><img src="/assets/ana-assistente-promoinfo.png" alt="Ana, Assistente PromoInfo"></span>
+        <span class="promo-assistant-face"><img src="/assets/ana-assistente-promoinfo.png" alt="Ana, Assistente PromoInfo" width="1086" height="1448"></span>
         <span class="promo-assistant-online-dot" aria-hidden="true"></span>
       </button>
       <section class="promo-assistant-panel promo-assistant-chat promo-assistant-chat-v11" id="promoAssistantPanel" hidden aria-label="Ana, Assistente PromoInfo">
         <header class="promo-assistant-chat-head promo-assistant-chat-head-v11">
           <div class="promo-assistant-character-v11" aria-hidden="true">
-            <img src="/assets/ana-assistente-promoinfo.png" alt="">
+            <img src="/assets/ana-assistente-promoinfo.png" alt="" width="1086" height="1448">
           </div>
           <div class="promo-assistant-title">
             <small>ANA • ASSISTENTE PROMOINFO</small>

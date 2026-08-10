@@ -6,49 +6,37 @@ from django.test import RequestFactory, SimpleTestCase, TestCase, override_setti
 from django.urls import reverse
 
 from .models import Funcionario, UserProfile
-from .security import verify_recaptcha
+from .security import RecaptchaResult, verify_recaptcha
 from .validators import limpar_cpf, validar_cpf
 
 
 class RecaptchaSettingsTests(SimpleTestCase):
-    def test_vercel_sem_chaves_reais_usa_par_oficial_de_teste(self):
-        from promoinfo.settings import (
-            RECAPTCHA_TEST_SECRET_KEY,
-            RECAPTCHA_TEST_SITE_KEY,
-            _resolve_recaptcha_keys,
-        )
+    def test_configuracao_nao_expoe_constantes_de_sandbox(self):
+        import promoinfo.settings as project_settings
 
-        keys = _resolve_recaptcha_keys(
-            "", "", debug=False, test_mode=False, is_vercel=True
-        )
-
-        self.assertEqual(keys, (RECAPTCHA_TEST_SITE_KEY, RECAPTCHA_TEST_SECRET_KEY))
-
-    def test_chaves_reais_tem_prioridade_na_vercel(self):
-        from promoinfo.settings import _resolve_recaptcha_keys
-
-        keys = _resolve_recaptcha_keys(
-            "site-real", "secret-real", debug=False, test_mode=False, is_vercel=True
-        )
-
-        self.assertEqual(keys, ("site-real", "secret-real"))
-
-    def test_configuracao_parcial_nao_mistura_chave_real_com_sandbox(self):
-        from promoinfo.settings import _resolve_recaptcha_keys
-
-        keys = _resolve_recaptcha_keys(
-            "site-real", "", debug=False, test_mode=False, is_vercel=True
-        )
-
-        self.assertEqual(keys, ("site-real", ""))
+        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SITE_KEY"))
+        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_SECRET_KEY"))
+        self.assertFalse(hasattr(project_settings, "RECAPTCHA_TEST_MODE"))
 
 
 class RecaptchaSecurityTests(SimpleTestCase):
     @override_settings(
+        DEBUG=True,
+        RECAPTCHA_SITE_KEY="",
+        RECAPTCHA_SECRET_KEY="",
+    )
+    def test_sem_configuracao_falha_fechado_tambem_em_debug(self):
+        request = RequestFactory().post("/", {"g-recaptcha-response": "qualquer"})
+
+        result = verify_recaptcha(request)
+
+        self.assertFalse(result.ok)
+        self.assertFalse(result.configured)
+
+    @override_settings(
         DEBUG=False,
-        RECAPTCHA_TEST_MODE=True,
-        RECAPTCHA_SITE_KEY="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
-        RECAPTCHA_SECRET_KEY="6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
         RECAPTCHA_ALLOWED_HOSTNAMES=[],
     )
     @patch("marketplace.security.urllib.request.urlopen", side_effect=OSError)
@@ -62,6 +50,58 @@ class RecaptchaSecurityTests(SimpleTestCase):
         self.assertFalse(result.ok)
         self.assertTrue(result.configured)
         mocked_urlopen.assert_called_once()
+
+    @override_settings(
+        DEBUG=False,
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
+        RECAPTCHA_ALLOWED_HOSTNAMES=["promoinfo.vercel.app"],
+    )
+    @patch("marketplace.security.urllib.request.urlopen")
+    def test_resposta_valida_do_google_e_aceita(self, mocked_urlopen):
+        mocked_urlopen.return_value.__enter__.return_value.read.return_value = (
+            b'{"success": true, "hostname": "promoinfo.vercel.app"}'
+        )
+        request = RequestFactory().post(
+            "/", {"g-recaptcha-response": "token-fornecido-pelo-google"}
+        )
+
+        result = verify_recaptcha(request)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(result.hostname, "promoinfo.vercel.app")
+        self.assertEqual(mocked_urlopen.call_args.kwargs["timeout"], 6)
+
+    @override_settings(
+        DEBUG=False,
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
+        RECAPTCHA_ALLOWED_HOSTNAMES=["promoinfo.vercel.app"],
+    )
+    @patch("marketplace.security.urllib.request.urlopen")
+    def test_hostname_ausente_ou_nao_autorizado_e_recusado(self, mocked_urlopen):
+        mocked_urlopen.return_value.__enter__.return_value.read.return_value = (
+            b'{"success": true, "hostname": "outro.example"}'
+        )
+        request = RequestFactory().post(
+            "/", {"g-recaptcha-response": "token-fornecido-pelo-google"}
+        )
+
+        result = verify_recaptcha(request)
+
+        self.assertFalse(result.ok)
+        self.assertEqual(result.error, "Origem do reCAPTCHA não autorizada.")
+
+    @override_settings(
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
+    )
+    @patch("marketplace.security.urllib.request.urlopen")
+    def test_token_vazio_nao_chama_google(self, mocked_urlopen):
+        result = verify_recaptcha(RequestFactory().post("/", {}))
+
+        self.assertFalse(result.ok)
+        mocked_urlopen.assert_not_called()
 
 
 class CpfValidatorTests(TestCase):
@@ -99,20 +139,39 @@ class AreaRestritaTests(TestCase):
         self.assertIn(reverse("login_restrito"), response.url)
 
     @override_settings(
-        DEBUG=True,
-        ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"],
-        RECAPTCHA_TEST_MODE=True,
-        RECAPTCHA_SITE_KEY="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
-        RECAPTCHA_SECRET_KEY="6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
     )
-    def test_login_autorizado_abre_painel(self):
+    def test_login_sem_token_recaptcha_e_recusado(self):
         response = self.client.post(
             reverse("login_restrito"),
-            {"username": "admin", "password": "senha-segura", "g-recaptcha-response": "PROMOINFO_TEST_OK"},
+            {"username": "admin", "password": "senha-segura"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+        self.assertContains(response, "Não sou um robô", status_code=400)
+
+    @override_settings(
+        DEBUG=True,
+        ALLOWED_HOSTS=["testserver", "localhost", "127.0.0.1"],
+        RECAPTCHA_SITE_KEY="site-ficticia",
+        RECAPTCHA_SECRET_KEY="secret-ficticia",
+        SESSION_COOKIE_AGE=1800,
+    )
+    @patch(
+        "marketplace.views.verify_recaptcha",
+        return_value=RecaptchaResult(ok=True, configured=True, hostname="testserver"),
+    )
+    def test_login_autorizado_abre_painel(self, mocked_recaptcha):
+        response = self.client.post(
+            reverse("login_restrito"),
+            {"username": "admin", "password": "senha-segura", "g-recaptcha-response": "token-mock"},
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Área restrita")
+        mocked_recaptcha.assert_called_once()
 
 
 class FuncionarioViewTests(TestCase):
@@ -173,6 +232,19 @@ class PublicSurfaceTests(TestCase):
 
 
 class AnaAssistantTests(TestCase):
+    @patch("marketplace.views.answer_question", return_value="Resposta ampliada funcionando.")
+    def test_endpoint_retorna_resposta_ampliada_sem_modo_limitado(self, provider):
+        response = self.client.post(
+            reverse("assistant_chat"),
+            data='{"message":"Explique a gravidade"}',
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["answer"], "Resposta ampliada funcionando.")
+        self.assertFalse(response.json()["limited"])
+        provider.assert_called_once_with("Explique a gravidade")
+
     def test_busca_nao_confunde_dia_com_nvidia(self):
         from .assistant_service import _score, query_terms
 

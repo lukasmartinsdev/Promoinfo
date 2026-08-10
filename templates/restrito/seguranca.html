@@ -1,1 +1,58 @@
-{% load static %}<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Segurança e auditoria | PromoInfo</title><link rel="stylesheet" href="/styles.css?v=7"><link rel="stylesheet" href="/area-restrita.css?v=7"></head><body><div id="siteHeader"></div><main class="restricted-page"><div class="restricted-container"><nav class="restricted-breadcrumb"><a href="/">Início</a><span>›</span><a href="{% url 'area_restrita' %}">Área restrita</a><span>›</span><strong>Segurança</strong></nav><header class="restricted-toolbar restricted-toolbar-compact"><div><span class="restricted-kicker">SEGURANÇA</span><h1>Segurança e auditoria</h1><p>Eventos administrativos e tentativas de acesso registradas pelo servidor.</p></div><a class="restricted-secondary-button" href="{% url 'area_restrita' %}">Voltar ao painel</a></header><section class="security-status-grid"><article><span>CSRF</span><strong>Ativo</strong></article><article><span>Rate limit</span><strong>Ativo</strong></article><article><span>reCAPTCHA v2</span><strong>{% if recaptcha_enabled %}{% if recaptcha_test_mode %}Teste local{% else %}Ativo{% endif %}{% else %}Aguardando chaves{% endif %}</strong></article><article><span>Auditoria</span><strong>Ativa</strong></article></section><section class="restricted-table-card"><div class="restricted-section-heading"><div><span>AUDITORIA</span><h2>Eventos recentes</h2></div></div><div class="restricted-table-wrap"><table class="restricted-table"><thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Detalhe</th><th>IP</th></tr></thead><tbody>{% for event in events %}<tr><td>{{ event.created_at|date:"d/m/Y H:i" }}</td><td>{{ event.actor.username|default:"Sistema" }}</td><td><code>{{ event.action }}</code></td><td>{{ event.detail|default:"—" }}</td><td>{{ event.ip_address|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5">Nenhum evento registrado.</td></tr>{% endfor %}</tbody></table></div></section><section class="restricted-table-card"><div class="restricted-section-heading"><div><span>LOGIN</span><h2>Tentativas recusadas</h2></div></div><div class="restricted-table-wrap"><table class="restricted-table"><thead><tr><th>Data</th><th>Usuário informado</th><th>IP</th></tr></thead><tbody>{% for item in failed_attempts %}<tr><td>{{ item.created_at|date:"d/m/Y H:i" }}</td><td>{{ item.username_key }}</td><td>{{ item.ip_address }}</td></tr>{% empty %}<tr><td colspan="3">Nenhuma tentativa recusada registrada.</td></tr>{% endfor %}</tbody></table></div></section></div></main><div id="siteFooter"></div><script src="/data.js"></script><script src="/marketplace.js"></script><script src="/shared.js?v=7"></script><script>document.addEventListener('DOMContentLoaded',()=>{window.PromoUI?.renderHeader('');window.PromoUI?.renderFooter();});</script></body></html>
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Segurança e auditoria | PromoInfo</title>
+  <link rel="stylesheet" href="/styles.css?v=7">
+  <link rel="stylesheet" href="/area-restrita.css?v=7">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="restricted-page">
+    <div class="restricted-container">
+      <nav class="restricted-breadcrumb">
+        <a href="/">Início</a><span>›</span><a href="{% url 'area_restrita' %}">Área restrita</a><span>›</span><strong>Segurança</strong>
+      </nav>
+      <header class="restricted-toolbar restricted-toolbar-compact">
+        <div><span class="restricted-kicker">SEGURANÇA</span><h1>Segurança e auditoria</h1><p>Eventos administrativos e tentativas de acesso registrados pelo servidor.</p></div>
+        <a class="restricted-secondary-button" href="{% url 'area_restrita' %}">Voltar ao painel</a>
+      </header>
+      <section class="security-status-grid">
+        <article><span>CSRF</span><strong>Ativo</strong></article>
+        <article><span>Rate limit</span><strong>Ativo</strong></article>
+        <article><span>reCAPTCHA v2</span><strong>{% if recaptcha_enabled %}Ativo{% else %}Aguardando chaves{% endif %}</strong></article>
+        <article><span>Auditoria</span><strong>Ativa</strong></article>
+      </section>
+      <section class="restricted-table-card">
+        <div class="restricted-section-heading"><div><span>AUDITORIA</span><h2>Eventos recentes</h2></div></div>
+        <div class="restricted-table-wrap">
+          <table class="restricted-table">
+            <thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Detalhe</th><th>IP</th></tr></thead>
+            <tbody>
+              {% for event in events %}<tr><td>{{ event.created_at|date:"d/m/Y H:i" }}</td><td>{{ event.actor.username|default:"Sistema" }}</td><td><code>{{ event.action }}</code></td><td>{{ event.detail|default:"—" }}</td><td>{{ event.ip_address|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5">Nenhum evento registrado.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="restricted-table-card">
+        <div class="restricted-section-heading"><div><span>LOGIN</span><h2>Tentativas recusadas</h2></div></div>
+        <div class="restricted-table-wrap">
+          <table class="restricted-table">
+            <thead><tr><th>Data</th><th>Usuário informado</th><th>IP</th></tr></thead>
+            <tbody>
+              {% for item in failed_attempts %}<tr><td>{{ item.created_at|date:"d/m/Y H:i" }}</td><td>{{ item.username_key }}</td><td>{{ item.ip_address }}</td></tr>{% empty %}<tr><td colspan="3">Nenhuma tentativa recusada registrada.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script src="/data.js"></script>
+  <script src="/marketplace.js"></script>
+  <script src="/shared.js?v=7"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>{window.PromoUI?.renderHeader('');window.PromoUI?.renderFooter();});</script>
+</body>
+</html>

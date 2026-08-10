@@ -1,6 +1,6 @@
-﻿.env
-.env.local
-.env.production
+.env
+.env.*
+!.env.example
 .venv/
 venv/
 db.sqlite3

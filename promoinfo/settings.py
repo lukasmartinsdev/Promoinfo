@@ -7,15 +7,16 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR / ".env"
+IS_VERCEL = os.getenv("VERCEL", "") == "1"
 
 # Em produção, variáveis do provedor têm prioridade. Em desenvolvimento, o .env
 # local é a fonte explícita de configuração para evitar valores antigos herdados
 # do terminal durante testes.
 load_dotenv(ENV_FILE, override=False)
-DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+DEBUG = os.getenv("DJANGO_DEBUG", "0" if IS_VERCEL else "1") == "1"
 if DEBUG and ENV_FILE.exists():
     load_dotenv(ENV_FILE, override=True)
-    DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+    DEBUG = os.getenv("DJANGO_DEBUG", "0" if IS_VERCEL else "1") == "1"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "").strip()
 if not SECRET_KEY:
     if DEBUG:
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "marketplace.middleware.SecurityHeadersMiddleware",
 ]
 
@@ -71,8 +73,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "promoinfo.wsgi.application"
 ASGI_APPLICATION = "promoinfo.asgi.application"
 
-# SQLite é usado somente para a área restrita e o cadastro de funcionários.
-# O marketplace continua usando localStorage até a futura integração com Supabase.
+# SQLite é o padrão somente no desenvolvimento local. Produção usa o PostgreSQL
+# configurado por variáveis de ambiente, sem alterar a integração existente.
 DB_ENGINE = os.getenv("PROMOINFO_DB_ENGINE", "sqlite").strip().lower()
 
 if DB_ENGINE == "postgresql":
@@ -106,44 +108,48 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = os.getenv("PROMOINFO_TIME_ZONE", "America/Sao_Paulo").strip() or "America/Sao_Paulo"
+USE_I18N = True
+USE_TZ = True
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-# Google reCAPTCHA v2
-RECAPTCHA_TEST_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-RECAPTCHA_TEST_SECRET_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-
-RECAPTCHA_TEST_MODE = (
-    os.getenv("RECAPTCHA_TEST_MODE", "1" if DEBUG else "0") == "1"
-)
-
-
-def _resolve_recaptcha_keys(site_key, secret_key, *, debug, test_mode, is_vercel):
-    """Seleciona um par consistente de chaves sem misturar real e sandbox."""
-    if not site_key and not secret_key and ((debug and test_mode) or is_vercel):
-        return RECAPTCHA_TEST_SITE_KEY, RECAPTCHA_TEST_SECRET_KEY
-    return site_key, secret_key
-
-
-RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY = _resolve_recaptcha_keys(
-    os.getenv("RECAPTCHA_SITE_KEY", "").strip(),
-    os.getenv("RECAPTCHA_SECRET_KEY", "").strip(),
-    debug=DEBUG,
-    test_mode=RECAPTCHA_TEST_MODE,
-    is_vercel=os.getenv("VERCEL", "") == "1",
-)
+# Google reCAPTCHA v2. O par real vem exclusivamente do ambiente; nenhum valor
+# de teste é embutido no código ou ativado automaticamente na Vercel.
+RECAPTCHA_SITE_KEY = os.getenv("RECAPTCHA_SITE_KEY", "").strip()
+RECAPTCHA_SECRET_KEY = os.getenv("RECAPTCHA_SECRET_KEY", "").strip()
+if bool(RECAPTCHA_SITE_KEY) != bool(RECAPTCHA_SECRET_KEY):
+    raise ImproperlyConfigured(
+        "RECAPTCHA_SITE_KEY e RECAPTCHA_SECRET_KEY precisam ser definidas em conjunto."
+    )
 
 RECAPTCHA_ALLOWED_HOSTNAMES = [
     hostname.strip()
     for hostname in os.getenv(
         "RECAPTCHA_ALLOWED_HOSTNAMES",
-        ""
+        "promoinfo.vercel.app" if IS_VERCEL else "",
     ).split(",")
     if hostname.strip()
 ]
+
+ASSISTANT_TOKEN = os.getenv("PROMOINFO_ASSISTANT_TOKEN", "").strip()
+ASSISTANT_MODEL = (
+    os.getenv("PROMOINFO_ASSISTANT_MODEL", "gemini-3.6-flash").strip()
+    or "gemini-3.6-flash"
+)
 
 
 # Execução atrás de proxy HTTPS
@@ -153,6 +159,10 @@ SESSION_COOKIE_SECURE = (
     os.getenv("PROMOINFO_SECURE_COOKIES", "0") == "1"
 )
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", "1800"))
 
 SECURE_SSL_REDIRECT = (
     os.getenv("PROMOINFO_FORCE_HTTPS", "0") == "1"
@@ -161,3 +171,8 @@ SECURE_SSL_REDIRECT = (
 SECURE_HSTS_SECONDS = int(
     os.getenv("PROMOINFO_HSTS_SECONDS", "0")
 )
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS >= 31536000
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"

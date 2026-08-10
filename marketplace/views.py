@@ -68,7 +68,6 @@ def render_page(request, page: str = "index"):
         context = {
             "recaptcha_enabled": bool(settings.RECAPTCHA_SITE_KEY and settings.RECAPTCHA_SECRET_KEY),
             "recaptcha_site_key": settings.RECAPTCHA_SITE_KEY,
-            "recaptcha_test_mode": settings.RECAPTCHA_TEST_MODE,
         }
     return render(request, template_name, context)
 
@@ -128,7 +127,6 @@ def _login_context(next_url: str = ""):
         "next": next_url,
         "recaptcha_enabled": bool(settings.RECAPTCHA_SITE_KEY and settings.RECAPTCHA_SECRET_KEY),
         "recaptcha_site_key": settings.RECAPTCHA_SITE_KEY,
-        "recaptcha_test_mode": settings.RECAPTCHA_TEST_MODE,
         "security_version": "Acesso interno",
     }
 
@@ -265,11 +263,10 @@ def editar_funcionario(request, funcionario_id: int):
                 audit(request, "employee.updated", "Funcionario", funcionario.pk, funcionario.nome)
                 messages.success(request, "Funcionário atualizado!")
                 return redirect("listar_funcionarios")
-            except (IntegrityError, Exception) as exc:
-                if "unique" in str(exc).lower() or "cpf" in str(exc).lower():
-                    messages.error(request, "Já existe um funcionário cadastrado com este CPF.")
-                else:
-                    messages.error(request, "Não foi possível atualizar o funcionário.")
+            except IntegrityError:
+                messages.error(request, "Já existe um funcionário cadastrado com este CPF.")
+            except ValidationError:
+                messages.error(request, "Revise os dados informados antes de salvar.")
     return render(request, "funcionarios/editar.html", {"funcionario": funcionario, "form_data": form_data})
 
 
@@ -345,7 +342,7 @@ def atualizar_usuario(request, user_id: int):
 def seguranca_auditoria(request):
     events = AuditEvent.objects.select_related("actor")[:100]
     failed = LoginAttempt.objects.filter(success=False)[:50]
-    return render(request, "restrito/seguranca.html", {"events": events, "failed_attempts": failed, "recaptcha_enabled": bool(settings.RECAPTCHA_SITE_KEY and settings.RECAPTCHA_SECRET_KEY), "recaptcha_test_mode": settings.RECAPTCHA_TEST_MODE})
+    return render(request, "restrito/seguranca.html", {"events": events, "failed_attempts": failed, "recaptcha_enabled": bool(settings.RECAPTCHA_SITE_KEY and settings.RECAPTCHA_SECRET_KEY)})
 
 
 

@@ -26,31 +26,15 @@ class RecaptchaResult:
 
 
 def verify_recaptcha(request) -> RecaptchaResult:
-    """Valida Google reCAPTCHA v2 no backend.
-
-    Em desenvolvimento e na Vercel, a aplicação pode usar as chaves públicas
-    de teste do Google quando nenhum par real estiver configurado.
-    """
+    """Valida Google reCAPTCHA v2 no backend e falha sempre de forma fechada."""
     secret = getattr(settings, "RECAPTCHA_SECRET_KEY", "").strip()
     site_key = getattr(settings, "RECAPTCHA_SITE_KEY", "").strip()
     if not secret or not site_key:
-        if settings.DEBUG:
-            return RecaptchaResult(ok=True, configured=False)
         return RecaptchaResult(ok=False, configured=False, error="reCAPTCHA não configurado no servidor.")
 
     token = request.POST.get("g-recaptcha-response", "").strip()
     if not token:
         return RecaptchaResult(ok=False, configured=True, error="Marque a opção ‘Não sou um robô’ para continuar.")
-
-    # Token exclusivo para testes automatizados locais; nunca é aceito em produção.
-    if (
-        settings.DEBUG
-        and getattr(settings, "RECAPTCHA_TEST_MODE", False)
-        and site_key == getattr(settings, "RECAPTCHA_TEST_SITE_KEY", "")
-        and secret == getattr(settings, "RECAPTCHA_TEST_SECRET_KEY", "")
-        and token == "PROMOINFO_TEST_OK"
-    ):
-        return RecaptchaResult(ok=True, configured=True, hostname="localhost")
 
     payload = urllib.parse.urlencode({
         "secret": secret,
@@ -65,8 +49,13 @@ def verify_recaptcha(request) -> RecaptchaResult:
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=6) as response:
-            result = json.loads(response.read().decode("utf-8"))
-    except Exception:
+            body = response.read(64 * 1024 + 1)
+            if len(body) > 64 * 1024:
+                raise ValueError("Resposta do reCAPTCHA acima do limite esperado.")
+            result = json.loads(body.decode("utf-8"))
+            if not isinstance(result, dict):
+                raise ValueError("Resposta inválida do reCAPTCHA.")
+    except (OSError, TimeoutError, UnicodeDecodeError, ValueError):
         return RecaptchaResult(ok=False, configured=True, error="Não foi possível validar o reCAPTCHA. Tente novamente.")
 
     if not bool(result.get("success")):
@@ -74,7 +63,7 @@ def verify_recaptcha(request) -> RecaptchaResult:
 
     hostname = str(result.get("hostname") or "")[:253]
     allowed = set(getattr(settings, "RECAPTCHA_ALLOWED_HOSTNAMES", []))
-    if allowed and hostname and hostname not in allowed and not settings.DEBUG:
+    if allowed and hostname not in allowed:
         return RecaptchaResult(ok=False, configured=True, error="Origem do reCAPTCHA não autorizada.", hostname=hostname)
 
     return RecaptchaResult(ok=True, configured=True, hostname=hostname)

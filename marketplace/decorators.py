@@ -1,5 +1,6 @@
 from functools import wraps
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 
 
@@ -8,7 +9,7 @@ def get_profile(user):
         return None
     try:
         return user.promoinfo_profile
-    except Exception:
+    except ObjectDoesNotExist:
         return None
 
 

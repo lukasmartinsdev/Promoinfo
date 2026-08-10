@@ -41,7 +41,7 @@ A V19 consolida:
 - bloqueio de recomendações comerciais para marketplaces concorrentes;
 - tratamento local de consultas comerciais da PromoInfo;
 - integração textual com Gemini para conhecimento geral quando a chave estiver configurada;
-- correção do ambiente local de reCAPTCHA;
+- reCAPTCHA v2 real em produção, configurado somente por variáveis de ambiente e sem bypass interno;
 - correção do teste de login da área restrita com `testserver`;
 - cadastro de funcionários com CPF matematicamente validado antes da gravação.
 
