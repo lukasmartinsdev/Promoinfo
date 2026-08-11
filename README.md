@@ -66,3 +66,10 @@ python manage.py check
 - `static/`: estilos, scripts, imagens e dados públicos;
 - `tools/`: verificações de qualidade e segurança;
 - `docs/`: documentação técnica.
+
+## API e documentação acadêmica
+
+A API autenticada de funcionários oferece GET, POST e PUT em
+`/api/funcionarios/`. O modelo conceitual, o modelo lógico, a matriz de endpoints
+e os requisitos funcionais e não funcionais estão documentados em
+[`docs/MODELAGEM_E_REQUISITOS.md`](docs/MODELAGEM_E_REQUISITOS.md).

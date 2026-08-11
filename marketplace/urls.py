@@ -1,12 +1,18 @@
 from django.urls import path, re_path
 from django.views.generic import RedirectView
-from . import views
+from . import api_views, views
 
 urlpatterns = [
     path("", views.render_page, {"page": "index"}, name="home"),
     path("api/status/", views.health, name="health"),
     path("api/ana/", views.assistant_chat, name="assistant_chat"),
     path("api/auth/challenge/", views.merchant_security_challenge, name="merchant_security_challenge"),
+    path("api/funcionarios/", api_views.funcionarios_collection, name="api_funcionarios"),
+    path(
+        "api/funcionarios/<int:funcionario_id>/",
+        api_views.funcionario_detail,
+        name="api_funcionario_detail",
+    ),
     path("area-restrita/entrar/", views.login_restrito, name="login_restrito"),
     path("area-restrita/sair/", views.logout_restrito, name="logout_restrito"),
     path("area-restrita/usuarios/", views.usuarios_permissoes, name="usuarios_permissoes"),
