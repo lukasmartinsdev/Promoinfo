@@ -208,7 +208,7 @@
             <a class="${activeClass('products')}" href="/catalogo.html">Comparar preços</a>
             <a class="${activeClass('builder')}" href="/monte-seu-pc.html">Monte seu PC</a>
             <a class="${activeClass('stores')}" href="/lojas.html">Lojas</a>
-            <a class="${activeClass('help')}" href="/ajuda.html">Ajuda</a>
+            <a class="${activeClass('help')}" href="/ajuda.html">FAQ</a>
             <a href="/catalogo.html?categoria=servicos">Serviços</a>
             <a href="/#marcas">Marcas</a>
             <a class="${activeClass('merchant')}" href="/lojista.html">Área do lojista</a>
@@ -222,7 +222,7 @@
         <button class="drawer-backdrop" type="button" data-close-drawer aria-label="Fechar menu"></button>
         <aside class="drawer-panel">
           <div class="drawer-head"><img src="/assets/promoinfo-logo.png" alt="PromoInfo Mix"><button type="button" data-close-drawer aria-label="Fechar">${icon('x')}</button></div>
-          <a href="/">Início</a><a href="/catalogo.html?ordem=ofertas">Ofertas</a><a href="/catalogo.html">Comparar preços</a><a href="/monte-seu-pc.html">Monte seu PC</a><a href="/lojas.html">Lojas</a><a href="/ajuda.html">Ajuda e opiniões</a><a href="/#marcas">Marcas</a><a href="/lojista.html">Área do lojista</a><a href="/area-restrita/">Área restrita</a><a href="/alugue.html">Alugue sua loja</a>
+          <a href="/">Início</a><a href="/catalogo.html?ordem=ofertas">Ofertas</a><a href="/catalogo.html">Comparar preços</a><a href="/monte-seu-pc.html">Monte seu PC</a><a href="/lojas.html">Lojas</a><a href="/ajuda.html">FAQ e opiniões</a><a href="/#marcas">Marcas</a><a href="/lojista.html">Área do lojista</a><a href="/area-restrita/">Área restrita</a><a href="/alugue.html">Alugue sua loja</a>
         </aside>
       </div>
       <div class="toast" id="globalToast" role="status" aria-live="polite"></div>`;
@@ -431,7 +431,7 @@
           <div><h3>Comprar</h3><a href="/catalogo.html">Comparar produtos</a><a href="/catalogo.html?ordem=ofertas">Ofertas</a><a href="/monte-seu-pc.html">Monte seu PC</a><a href="/#marcas">Marcas</a></div>
           <div><h3>Unidades</h3><a href="/#unidades">Barra</a><a href="/#unidades">Centro</a><a href="/#unidades">Norte</a><a href="/#unidades">Tijuca</a></div>
           <div><h3>Para lojistas</h3><a href="/lojista.html">Cadastrar ou acessar painel</a><a href="/alugue.html">Alugue sua loja</a><a href="/lojas.html">Diretório de lojas</a><a href="tel:21999249260">Comercial: (21) 99924-9260</a></div>
-          <div><h3>Informações</h3><a href="/ajuda.html">Ajuda e opiniões</a><a href="/privacidade.html">Privacidade</a><a href="/termos.html">Termos de uso</a><a href="/area-restrita/">Área restrita</a></div>
+          <div><h3>Informações</h3><a href="/ajuda.html">FAQ e opiniões</a><a href="/privacidade.html">Privacidade</a><a href="/termos.html">Termos de uso</a><a href="/area-restrita/">Área restrita</a></div>
         </div>
         <div class="container footer-bottom"><span>© 2026 PromoInfo Mix — tecnologia, lojas e comparação de ofertas.</span><span>Preços, estoque e condições devem ser confirmados diretamente com cada lojista.</span></div>
       </footer>`;

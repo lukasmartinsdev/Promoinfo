@@ -353,3 +353,37 @@
   .pi-flash-body{grid-template-rows:auto 39px 36px 54px 44px;min-height:256px}
   .pi-flash-price{min-height:54px}
 }
+
+/* Atalho visível para a central de FAQ na página inicial. */
+.pi-help-section{padding:18px 0 20px;background:#fff}
+.pi-help-card{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:36px;
+  align-items:center;
+  padding:34px 38px;
+  border-radius:26px;
+  background:linear-gradient(120deg,#071b35 0%,#0b3e77 76%,#145dce 145%);
+  color:#fff;
+  box-shadow:0 20px 48px rgba(7,27,53,.17);
+}
+.pi-help-card::before,.pi-help-card::after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+.pi-help-card::before{width:230px;height:230px;right:-94px;top:-123px;border:38px solid rgba(255,90,0,.27)}
+.pi-help-card::after{width:150px;height:150px;left:44%;bottom:-118px;background:rgba(69,132,226,.18)}
+.pi-help-copy h2{margin:12px 0 8px;color:#fff;font-size:clamp(2rem,3vw,3.15rem);line-height:1;letter-spacing:-.045em}
+.pi-help-copy p{max-width:700px;margin:0;color:#c9d7e8;font-size:.9rem;line-height:1.6}
+.pi-help-topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.pi-help-topics span{padding:6px 10px;border:1px solid rgba(255,255,255,.21);border-radius:999px;background:rgba(255,255,255,.08);color:#e7eff9;font-size:.65rem;font-weight:850}
+.pi-help-action{position:relative;z-index:1;display:grid;min-width:220px;gap:14px;justify-items:end}
+.pi-help-action .pi-button{width:220px}
+.pi-help-mark{display:grid;width:66px;height:66px;place-items:center;border:1px solid rgba(255,255,255,.23);border-radius:22px;background:rgba(255,255,255,.1);color:#ffc400;font-size:2rem;font-weight:950;box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+.theme-dark .pi-help-section{background:#071321}
+@media(max-width:760px){
+  .pi-help-card{grid-template-columns:1fr;gap:22px;padding:29px 24px}
+  .pi-help-action{width:100%;min-width:0;grid-template-columns:auto minmax(0,1fr);align-items:center;justify-items:start}
+  .pi-help-action .pi-button{width:100%}
+  .pi-help-mark{width:52px;height:52px;border-radius:16px;font-size:1.55rem}
+}
