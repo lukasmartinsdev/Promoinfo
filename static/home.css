@@ -260,3 +260,50 @@
   .pi-pc-art{min-height:176px;margin-bottom:16px !important}
   .pi-pc-art img{width:82% !important;max-height:168px !important}
 }
+
+/* Arte premium do configurador: enquadramento panoramico e legivel no card. */
+.pi-pc-art{
+  isolation:isolate;
+  min-height:154px;
+  background:
+    radial-gradient(circle at 88% 28%,rgba(255,143,87,.14),transparent 32%),
+    radial-gradient(circle at 8% 82%,rgba(71,126,202,.10),transparent 34%),
+    #fbfcff !important;
+}
+.pi-pc-art::before{
+  inset:auto auto -62px -54px;
+  width:176px;
+  height:176px;
+  background:rgba(205,220,242,.34);
+}
+.pi-pc-art::after{
+  inset:18px 20px auto auto;
+  width:88px;
+  height:88px;
+  border-radius:50%;
+  background:rgba(255,162,111,.10);
+}
+.pi-pc-art img{
+  width:122% !important;
+  height:122% !important;
+  max-width:none !important;
+  max-height:none !important;
+  object-fit:cover !important;
+  object-position:center 58% !important;
+  filter:drop-shadow(0 12px 18px rgba(7,27,53,.10));
+}
+.pi-pc-card:hover .pi-pc-art img{transform:scale(1.018)}
+.theme-dark .pi-pc-art img{filter:brightness(.9) saturate(1.04) drop-shadow(0 14px 20px rgba(0,0,0,.3))}
+@media (min-width:1181px){
+  .pi-pc-art{min-height:148px !important}
+  .pi-pc-art img{width:122% !important;max-height:none !important}
+}
+@media (max-width:620px){
+  .pi-pc-art{min-height:190px !important}
+  .pi-pc-art img{width:118% !important;height:118% !important;max-height:none !important;object-position:center 57% !important}
+}
+
+/* Interacoes consistentes e acessiveis nos cards principais. */
+.pi-card,.pi-category-card,.pi-store-card,.pi-unit-card,.pi-flash-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.pi-card:focus-within,.pi-category-card:focus-visible,.pi-store-card:focus-within,.pi-unit-card:focus-within,.pi-flash-card:focus-within{border-color:rgba(255,90,0,.42);box-shadow:0 18px 40px rgba(8,31,59,.11),0 0 0 3px rgba(255,90,0,.10)}
+@media (prefers-reduced-motion:reduce){.pi-card,.pi-category-card,.pi-store-card,.pi-unit-card,.pi-flash-card,.pi-hero-art>img,.pi-pc-art img{transition:none !important}.pi-card:hover,.pi-category-card:hover,.pi-store-card:hover,.pi-unit-card:hover,.pi-flash-card:hover,.pi-hero-main:hover .pi-hero-art>img,.pi-pc-card:hover .pi-pc-art img{transform:none !important}}

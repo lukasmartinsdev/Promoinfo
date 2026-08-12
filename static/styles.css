@@ -4379,3 +4379,51 @@ body {
   .promo-assistant-character-v11 img{width:116px;height:155px;transform:translate(-17px,-20px)}
   .promo-assistant-chat-v11 .promo-assistant-title span{display:none !important}
 }
+
+/* Refinamento visual v13: produto mais informativo na primeira dobra. */
+@media (min-width:981px){
+  .product-detail-card{
+    grid-template-columns:minmax(430px,.94fr) minmax(0,1.06fr);
+    align-items:stretch;
+    min-height:560px;
+  }
+  .product-hero-media{
+    height:auto;
+    min-height:560px;
+    padding:42px;
+    border-right:1px solid var(--line);
+  }
+  .product-hero-media img{
+    max-width:560px;
+    max-height:390px;
+  }
+  .product-hero-info{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:42px;
+    border-top:0;
+  }
+  .product-hero-info h1{font-size:clamp(2.45rem,3.4vw,3.65rem)}
+}
+
+/* Superficies, foco e controles com acabamento consistente nas paginas publicas. */
+.catalog-results-head-v3,.catalog-sidebar-v3,.product-detail-card,.store-directory-card,.builder-config-card,.builder-summary-card,.rent-form-v3,.rent-contact-card-v3{
+  box-shadow:0 14px 34px rgba(8,31,59,.065);
+}
+.catalog-search-v3:focus-within,.store-search-bar:focus-within,.selection-filters label:focus-within,.rent-form-v3 input:focus,.rent-form-v3 select:focus,.rent-form-v3 textarea:focus{
+  border-color:rgba(255,90,0,.58);
+  box-shadow:0 0 0 4px rgba(255,90,0,.10);
+}
+.product-card,.store-directory-card,.offer-card,.part-option-card,.rent-unit-card-v3{
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.product-card:hover,.store-directory-card:hover,.offer-card:hover,.part-option-card:hover,.rent-unit-card-v3:hover{
+  transform:translateY(-3px);
+  border-color:#d6e0ec;
+  box-shadow:0 20px 42px rgba(8,31,59,.11);
+}
+@media (prefers-reduced-motion:reduce){
+  .product-card,.store-directory-card,.offer-card,.part-option-card,.rent-unit-card-v3{transition:none !important}
+  .product-card:hover,.store-directory-card:hover,.offer-card:hover,.part-option-card:hover,.rent-unit-card-v3:hover{transform:none !important}
+}
