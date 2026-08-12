@@ -163,8 +163,10 @@ def _login_context(next_url: str = ""):
 
 @never_cache
 def login_restrito(request):
-    if request.user.is_authenticated and get_profile(request.user):
-        return redirect("area_restrita")
+    if request.user.is_authenticated:
+        if get_profile(request.user):
+            return redirect("area_restrita")
+        logout(request)
     next_url = request.GET.get("next", "")
 
     if request.method == "POST":

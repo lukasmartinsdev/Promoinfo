@@ -1,5 +1,6 @@
 from functools import wraps
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 
@@ -20,7 +21,8 @@ def restricted_access(view):
             return redirect(f"/area-restrita/entrar/?next={request.path}")
         if get_profile(request.user) is None:
             messages.error(request, "Seu usuário não possui perfil de acesso à área restrita.")
-            return redirect("home")
+            logout(request)
+            return redirect(f"/area-restrita/entrar/?next={request.path}")
         return view(request, *args, **kwargs)
     return inner
 

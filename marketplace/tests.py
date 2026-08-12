@@ -419,13 +419,25 @@ class MerchantAuthenticationTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-    def test_lojista_nao_pode_entrar_na_area_restrita(self):
+    def test_lojista_e_direcionado_para_login_da_area_restrita(self):
         self.client.force_login(self.merchant)
 
         response = self.client.get(reverse("area_restrita"))
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("home"))
+        self.assertIn(reverse("login_restrito"), response.url)
+        login_page = self.client.get(response.url)
+        self.assertEqual(login_page.status_code, 200)
+        self.assertContains(login_page, "Área restrita")
+
+    def test_login_restrito_troca_sessao_de_lojista_pelo_formulario(self):
+        self.client.force_login(self.merchant)
+
+        response = self.client.get(reverse("login_restrito"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Área restrita")
+        self.assertNotIn("_auth_user_id", self.client.session)
 
     def test_troca_senha_remove_marcacao_provisoria(self):
         self.client.force_login(self.merchant)
