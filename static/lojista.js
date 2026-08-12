@@ -6,15 +6,58 @@
 
   document.addEventListener('DOMContentLoaded', init);
 
-  function init() {
+  async function init() {
     U.renderHeader('merchant');
     U.renderFooter();
     hydrateIcons(document);
     const session = M.getSession();
-    if (session?.role === 'merchant') window.location.replace('painel-lojista.html');
+    if (session?.role === 'merchant') {
+      if (!session.remoteAuth || await remoteSessionIsValid()) {
+        window.location.replace('painel-lojista.html');
+        return;
+      }
+      M.logout();
+    }
     bindTabs();
     bindForms();
     bindLogo();
+  }
+
+  function csrfToken(form) {
+    return form?.querySelector('[name="csrfmiddlewaretoken"]')?.value || '';
+  }
+
+  async function remoteSessionIsValid() {
+    try {
+      const response = await fetch('/api/lojista/sessao/', { credentials: 'same-origin' });
+      if (!response.ok) return false;
+      const result = await response.json();
+      if (!result.ok || !result.merchant) return false;
+      M.adoptRemoteMerchant(result.merchant);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function djangoLogin(form, data) {
+    const csrf = csrfToken(form);
+    const response = await fetch('/api/lojista/entrar/', {
+      method: 'POST',
+      headers: csrf ? { 'X-CSRFToken': csrf } : {},
+      body: data,
+      credentials: 'same-origin'
+    });
+    const result = await response.json().catch(() => ({ ok: false, error: 'Falha ao validar o acesso.' }));
+    if (response.ok && result.ok && result.merchant) {
+      M.adoptRemoteMerchant(result.merchant);
+      return;
+    }
+    if (response.status === 401 && result.localFallback) {
+      await M.login(data.get('email'), data.get('password'));
+      return;
+    }
+    throw new Error(result.error || 'Falha ao validar o acesso.');
   }
 
   function hydrateIcons(root) {
@@ -95,8 +138,7 @@
       feedback('Validando acesso…', 'info');
       setBusy(form, true);
       try {
-        await securityChallenge(form, data.get('email'));
-        await M.login(data.get('email'), data.get('password'));
+        await djangoLogin(form, data);
         feedback('Acesso confirmado. Abrindo o painel…', 'success');
         window.location.replace('painel-lojista.html');
       } catch (error) {

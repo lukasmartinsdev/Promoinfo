@@ -7,6 +7,10 @@ urlpatterns = [
     path("api/status/", views.health, name="health"),
     path("api/ana/", views.assistant_chat, name="assistant_chat"),
     path("api/auth/challenge/", views.merchant_security_challenge, name="merchant_security_challenge"),
+    path("api/lojista/entrar/", views.merchant_login, name="merchant_login"),
+    path("api/lojista/sessao/", views.merchant_session, name="merchant_session"),
+    path("api/lojista/sair/", views.merchant_logout, name="merchant_logout"),
+    path("api/lojista/senha/", views.merchant_change_password, name="merchant_change_password"),
     path("api/funcionarios/", api_views.funcionarios_collection, name="api_funcionarios"),
     path(
         "api/funcionarios/<int:funcionario_id>/",

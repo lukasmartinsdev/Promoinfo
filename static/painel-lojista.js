@@ -10,9 +10,13 @@
 
   document.addEventListener('DOMContentLoaded', init);
 
-  function init() {
+  async function init() {
     const session = M.getSession();
     if (!session || session.role !== 'merchant') return window.location.replace('lojista.html');
+    if (session.remoteAuth && !await refreshRemoteSession()) {
+      M.logout();
+      return window.location.replace('lojista.html');
+    }
     merchant = M.getMerchant(session.id);
     if (!merchant) { M.logout(); return window.location.replace('lojista.html'); }
     U.renderHeader('merchant');
@@ -25,6 +29,40 @@
     bindPassword();
     bindProductEditor();
     refresh();
+    if (M.getSession()?.mustChangePassword) {
+      openSecurityPanel();
+      setPasswordChangeRequired(true);
+      feedback('Troque a senha provisória antes de continuar.', 'info');
+    }
+  }
+
+  function csrfToken() {
+    const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  async function refreshRemoteSession() {
+    try {
+      const response = await fetch('/api/lojista/sessao/', { credentials: 'same-origin' });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok || !result.merchant) return false;
+      M.adoptRemoteMerchant(result.merchant);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function openSecurityPanel() {
+    const button = document.querySelector('[data-panel-view="security"]');
+    document.querySelectorAll('[data-panel-view]').forEach((item) => item.classList.toggle('active', item === button));
+    document.querySelectorAll('[data-panel-section]').forEach((section) => section.classList.toggle('active', section.dataset.panelSection === 'security'));
+  }
+
+  function setPasswordChangeRequired(required) {
+    document.querySelectorAll('[data-panel-view]').forEach((button) => {
+      if (button.dataset.panelView !== 'security') button.disabled = required;
+    });
   }
 
   function hydrateIcons(root) {
@@ -131,7 +169,21 @@
   }
 
   function bindActions() {
-    document.getElementById('merchantLogoutBtn').addEventListener('click', () => { M.logout(); window.location.replace('lojista.html'); });
+    document.getElementById('merchantLogoutBtn').addEventListener('click', async () => {
+      const session = M.getSession();
+      if (session?.remoteAuth) {
+        try {
+          const csrf = csrfToken();
+          await fetch('/api/lojista/sair/', {
+            method: 'POST',
+            headers: csrf ? { 'X-CSRFToken': csrf } : {},
+            credentials: 'same-origin'
+          });
+        } catch {}
+      }
+      M.logout();
+      window.location.replace('lojista.html');
+    });
     document.querySelectorAll('[data-open-product-form]').forEach((button) => button.addEventListener('click', () => openProductEditor()));
     document.getElementById('merchantProductSearch').addEventListener('input', renderProducts);
     document.getElementById('merchantProductStatusFilter').addEventListener('change', renderProducts);
@@ -279,7 +331,21 @@
       const data = new FormData(form);
       if (data.get('newPassword') !== data.get('newPasswordConfirm')) return feedback('As novas senhas não coincidem.', 'error');
       try {
-        await M.changePassword(merchant.id, data.get('currentPassword'), data.get('newPassword'));
+        if (M.getSession()?.remoteAuth) {
+          const csrf = csrfToken();
+          const response = await fetch('/api/lojista/senha/', {
+            method: 'POST',
+            headers: csrf ? { 'X-CSRFToken': csrf } : {},
+            body: data,
+            credentials: 'same-origin'
+          });
+          const result = await response.json().catch(() => ({ ok: false, error: 'Falha ao atualizar a senha.' }));
+          if (!response.ok || !result.ok) throw new Error(result.error || 'Falha ao atualizar a senha.');
+          merchant = M.adoptRemoteMerchant({ ...merchant, mustChangePassword: false });
+          setPasswordChangeRequired(false);
+        } else {
+          await M.changePassword(merchant.id, data.get('currentPassword'), data.get('newPassword'));
+        }
         form.reset();
         feedback('Senha atualizada com sucesso.', 'success');
       } catch (error) {

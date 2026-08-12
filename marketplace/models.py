@@ -4,6 +4,9 @@ from django.db import models
 
 from .validators import limpar_cpf, validar_cpf
 
+MERCHANT_GROUP = "promoinfo_merchant"
+MERCHANT_PASSWORD_CHANGE_GROUP = "promoinfo_merchant_password_change"
+
 
 class Funcionario(models.Model):
     nome = models.CharField(max_length=150)

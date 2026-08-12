@@ -2,11 +2,18 @@ import os
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
-from .models import Funcionario, UserProfile
+from .models import (
+    MERCHANT_GROUP,
+    MERCHANT_PASSWORD_CHANGE_GROUP,
+    AuditEvent,
+    Funcionario,
+    UserProfile,
+)
 from .security import RecaptchaResult, verify_recaptcha
 from .validators import limpar_cpf, validar_cpf
 
@@ -333,6 +340,126 @@ class PublicSurfaceTests(TestCase):
         response = self.client.get("/admin.html")
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login_restrito"), response.url)
+
+
+class MerchantAuthenticationTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.merchant = User.objects.create_user(
+            username="lojista-admin",
+            email="admin@promoinfo.local",
+            password="Senha-Provisoria-2026!",
+            is_staff=False,
+        )
+        self.merchant.groups.add(Group.objects.create(name=MERCHANT_GROUP))
+        self.pending_group = Group.objects.create(
+            name=MERCHANT_PASSWORD_CHANGE_GROUP
+        )
+        self.merchant.groups.add(self.pending_group)
+
+        self.internal_user = User.objects.create_user(
+            username="interno",
+            email="interno@promoinfo.local",
+            password="Senha-Interna-2026!",
+            is_staff=True,
+        )
+        UserProfile.objects.create(
+            user=self.internal_user,
+            role=UserProfile.MASTER,
+        )
+
+    @override_settings(SESSION_COOKIE_AGE=1800)
+    @patch(
+        "marketplace.views.verify_recaptcha",
+        return_value=RecaptchaResult(ok=True, configured=True, hostname="testserver"),
+    )
+    def test_login_lojista_usa_django_e_registra_auditoria(self, mocked_recaptcha):
+        response = self.client.post(
+            reverse("merchant_login"),
+            {
+                "email": "admin@promoinfo.local",
+                "password": "Senha-Provisoria-2026!",
+                "g-recaptcha-response": "token-mock",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["merchant"]["remoteAuth"])
+        self.assertTrue(response.json()["merchant"]["mustChangePassword"])
+        session = self.client.get(reverse("merchant_session"))
+        self.assertEqual(session.status_code, 200)
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                actor=self.merchant,
+                action="merchant.login.success",
+            ).exists()
+        )
+        mocked_recaptcha.assert_called_once()
+
+    @override_settings(SESSION_COOKIE_AGE=1800)
+    @patch(
+        "marketplace.views.verify_recaptcha",
+        return_value=RecaptchaResult(ok=True, configured=True, hostname="testserver"),
+    )
+    def test_conta_interna_nao_pode_entrar_como_lojista(self, _mocked_recaptcha):
+        response = self.client.post(
+            reverse("merchant_login"),
+            {
+                "email": "interno@promoinfo.local",
+                "password": "Senha-Interna-2026!",
+                "g-recaptcha-response": "token-mock",
+            },
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_sessao_de_lojista_exige_autenticacao(self):
+        response = self.client.get(reverse("merchant_session"))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_lojista_nao_pode_entrar_na_area_restrita(self):
+        self.client.force_login(self.merchant)
+
+        response = self.client.get(reverse("area_restrita"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("home"))
+
+    def test_troca_senha_remove_marcacao_provisoria(self):
+        self.client.force_login(self.merchant)
+
+        response = self.client.post(
+            reverse("merchant_change_password"),
+            {
+                "currentPassword": "Senha-Provisoria-2026!",
+                "newPassword": "Nova-Senha-Segura-2026!",
+                "newPasswordConfirm": "Nova-Senha-Segura-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.merchant.refresh_from_db()
+        self.assertTrue(self.merchant.check_password("Nova-Senha-Segura-2026!"))
+        self.assertFalse(
+            self.merchant.groups.filter(
+                name=MERCHANT_PASSWORD_CHANGE_GROUP
+            ).exists()
+        )
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                actor=self.merchant,
+                action="merchant.password.changed",
+            ).exists()
+        )
+
+    def test_lojista_nao_recebe_permissoes_de_funcionario(self):
+        self.client.force_login(self.merchant)
+
+        response = self.client.get(reverse("api_funcionarios"))
+
+        self.assertEqual(response.status_code, 403)
 
 
 class AnaAssistantTests(TestCase):

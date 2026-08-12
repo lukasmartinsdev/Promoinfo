@@ -98,6 +98,53 @@
     localStorage.removeItem(SESSION_KEY);
   }
 
+  function adoptRemoteMerchant(input = {}) {
+    if (!input.id || !input.email) throw new Error('Conta de lojista inválida.');
+    let merchant = null;
+    updateState((state) => {
+      const index = state.merchants.findIndex((item) => item.id === input.id);
+      const existing = index >= 0 ? state.merchants[index] : {};
+      merchant = {
+        responsibleName: 'Administrador PromoInfo',
+        tradeName: 'PromoInfo',
+        legalName: 'PromoInfo',
+        document: '',
+        email: input.email,
+        phone: '',
+        whatsapp: '',
+        unit: 'Centro',
+        location: 'Administração',
+        segment: 'Informática e componentes',
+        description: 'Conta administrativa do lojista PromoInfo.',
+        logo: '',
+        status: 'approved',
+        reviewNote: '',
+        accessEnabled: true,
+        accessRole: 'merchant',
+        createdAt: new Date().toISOString(),
+        ...existing,
+        ...input,
+        remoteAuth: true,
+        updatedAt: new Date().toISOString()
+      };
+      delete merchant.passwordHash;
+      delete merchant.passwordSalt;
+      if (index >= 0) state.merchants[index] = merchant;
+      else state.merchants.push(merchant);
+      return state;
+    });
+    setSession({
+      role: 'merchant',
+      id: merchant.id,
+      merchantId: merchant.id,
+      email: merchant.email,
+      remoteAuth: true,
+      mustChangePassword: Boolean(merchant.mustChangePassword),
+      loginAt: new Date().toISOString()
+    });
+    return merchant;
+  }
+
 
   async function login(email, password) {
     const mail = normalize(email);
@@ -443,6 +490,7 @@
     getSession,
     setSession,
     logout,
+    adoptRemoteMerchant,
     login,
     registerMerchant,
     getMerchant,

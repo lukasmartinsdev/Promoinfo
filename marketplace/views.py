@@ -8,6 +8,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -16,12 +17,19 @@ from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
 from .decorators import get_profile, require_capability, restricted_access
-from .models import AuditEvent, Funcionario, LoginAttempt, UserProfile
+from .models import (
+    MERCHANT_GROUP,
+    MERCHANT_PASSWORD_CHANGE_GROUP,
+    AuditEvent,
+    Funcionario,
+    LoginAttempt,
+    UserProfile,
+)
 from .security import client_ip, honeypot_ok, login_is_blocked, verify_recaptcha
 from .validators import limpar_cpf, validar_cpf
 from .assistant_service import AssistantProviderError, answer_question, local_answer
@@ -52,6 +60,28 @@ def audit(request, action: str, target_type: str = "", target_id: str = "", deta
         detail=detail[:500],
         ip_address=client_ip(request),
     )
+
+
+def _is_merchant_user(user) -> bool:
+    return bool(
+        user.is_authenticated
+        and user.is_active
+        and user.groups.filter(name=MERCHANT_GROUP).exists()
+    )
+
+
+def _merchant_payload(user) -> dict:
+    responsible_name = user.get_full_name().strip() or "Administrador PromoInfo"
+    return {
+        "id": f"django-{user.pk}",
+        "email": user.email,
+        "responsibleName": responsible_name,
+        "tradeName": "PromoInfo",
+        "remoteAuth": True,
+        "mustChangePassword": user.groups.filter(
+            name=MERCHANT_PASSWORD_CHANGE_GROUP
+        ).exists(),
+    }
 
 
 @ensure_csrf_cookie
@@ -364,6 +394,143 @@ def merchant_security_challenge(request):
     LoginAttempt.objects.create(username_key=key, ip_address=ip, success=challenge.ok)
     if not challenge.ok:
         return JsonResponse({"ok": False, "error": challenge.error}, status=400)
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+@never_cache
+def merchant_login(request):
+    email = request.POST.get("email", "").strip().lower()[:150]
+    password = request.POST.get("password", "")
+    ip = client_ip(request)
+    attempt_key = email
+
+    if not honeypot_ok(request):
+        LoginAttempt.objects.create(
+            username_key=attempt_key,
+            ip_address=ip,
+            success=False,
+        )
+        audit(request, "merchant.login.bot_blocked")
+        return JsonResponse(
+            {"ok": False, "error": "Não foi possível validar o acesso."},
+            status=400,
+        )
+
+    if login_is_blocked(LoginAttempt, attempt_key, ip):
+        audit(request, "merchant.login.rate_limited", detail=email[:80])
+        return JsonResponse(
+            {"ok": False, "error": "Muitas tentativas. Aguarde alguns minutos."},
+            status=429,
+        )
+
+    challenge = verify_recaptcha(request)
+    if not challenge.ok:
+        LoginAttempt.objects.create(
+            username_key=attempt_key,
+            ip_address=ip,
+            success=False,
+        )
+        audit(request, "merchant.login.recaptcha_failed", detail=challenge.error)
+        return JsonResponse({"ok": False, "error": challenge.error}, status=400)
+
+    User = get_user_model()
+    account = User.objects.filter(email__iexact=email).first() if email else None
+    user = None
+    if account is not None:
+        user = authenticate(
+            request,
+            username=account.get_username(),
+            password=password,
+        )
+    success = bool(user and _is_merchant_user(user))
+    LoginAttempt.objects.create(
+        username_key=attempt_key,
+        ip_address=ip,
+        success=success,
+    )
+
+    if not success:
+        audit(request, "merchant.login.failed", detail=email[:80])
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "E-mail ou senha inválidos.",
+                "localFallback": account is None,
+            },
+            status=401,
+        )
+
+    login(request, user)
+    request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+    audit(
+        request,
+        "merchant.login.success",
+        "User",
+        user.pk,
+        "reCAPTCHA=ok",
+    )
+    return JsonResponse({"ok": True, "merchant": _merchant_payload(user)})
+
+
+@require_GET
+@never_cache
+def merchant_session(request):
+    if not _is_merchant_user(request.user):
+        return JsonResponse(
+            {"ok": False, "error": "Sessão de lojista não encontrada."},
+            status=401,
+        )
+    return JsonResponse({"ok": True, "merchant": _merchant_payload(request.user)})
+
+
+@require_POST
+def merchant_logout(request):
+    if _is_merchant_user(request.user):
+        audit(request, "merchant.logout", "User", request.user.pk)
+    logout(request)
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+@never_cache
+def merchant_change_password(request):
+    if not _is_merchant_user(request.user):
+        return JsonResponse(
+            {"ok": False, "error": "Autenticação de lojista necessária."},
+            status=401,
+        )
+
+    current_password = request.POST.get("currentPassword", "")
+    new_password = request.POST.get("newPassword", "")
+    confirmation = request.POST.get("newPasswordConfirm", "")
+    if not request.user.check_password(current_password):
+        return JsonResponse(
+            {"ok": False, "error": "Senha atual incorreta."},
+            status=400,
+        )
+    if new_password != confirmation:
+        return JsonResponse(
+            {"ok": False, "error": "As novas senhas não coincidem."},
+            status=400,
+        )
+    try:
+        validate_password(new_password, user=request.user)
+    except ValidationError as exc:
+        return JsonResponse(
+            {"ok": False, "error": " ".join(exc.messages)},
+            status=400,
+        )
+
+    request.user.set_password(new_password)
+    request.user.save(update_fields=["password"])
+    pending_group = Group.objects.filter(
+        name=MERCHANT_PASSWORD_CHANGE_GROUP
+    ).first()
+    if pending_group is not None:
+        request.user.groups.remove(pending_group)
+    update_session_auth_hash(request, request.user)
+    audit(request, "merchant.password.changed", "User", request.user.pk)
     return JsonResponse({"ok": True})
 
 @restricted_access
