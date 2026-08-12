@@ -341,6 +341,14 @@ class PublicSurfaceTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login_restrito"), response.url)
 
+    def test_pagina_de_ajuda_exibe_faq_e_depoimentos(self):
+        response = self.client.get("/ajuda.html")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Perguntas frequentes")
+        self.assertContains(response, "Experiências que inspiram confiança")
+        self.assertContains(response, "Conteúdo demonstrativo do projeto")
+
 
 class MerchantAuthenticationTests(TestCase):
     def setUp(self):

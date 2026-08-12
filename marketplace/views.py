@@ -37,6 +37,7 @@ from .assistant_service import AssistantProviderError, answer_question, local_an
 PAGE_TEMPLATES = {
     "index": "index.html",
     "admin": "admin.html",
+    "ajuda": "ajuda.html",
     "alugue": "alugue.html",
     "catalogo": "catalogo.html",
     "lojas": "lojas.html",
