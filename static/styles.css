@@ -4427,3 +4427,82 @@ body {
   .product-card,.store-directory-card,.offer-card,.part-option-card,.rent-unit-card-v3{transition:none !important}
   .product-card:hover,.store-directory-card:hover,.offer-card:hover,.part-option-card:hover,.rent-unit-card-v3:hover{transform:none !important}
 }
+
+/* Equalizacao dos cards com conteudo variavel em todas as vitrines. */
+.product-grid,.offers-grid,.store-cards,.option-grid,.rent-units-grid-v3{align-items:stretch}
+.product-card,.offer-card,.store-card,.part-option-card,.rent-unit-card-v3{height:100%}
+.product-card{display:flex;flex-direction:column}
+.product-card .product-body{display:flex;flex:1;flex-direction:column}
+.product-card .product-body h3{
+  display:-webkit-box;
+  min-height:44px;
+  max-height:44px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.product-card .price-line{margin-top:auto}
+.product-card .product-body>.btn{margin-top:0}
+
+.offer-card{display:flex;flex-direction:column}
+.offer-card-body{display:flex;flex:1;flex-direction:column}
+.offer-store-head{min-height:46px}
+.offer-store-head h3{
+  display:-webkit-box;
+  max-height:42px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.offer-contact{min-height:34px}
+.offer-actions{margin-top:auto;padding-top:14px}
+
+.store-card{display:flex;flex-direction:column}
+.store-card .store-body{display:flex;flex:1;flex-direction:column}
+.store-card .store-body h3{
+  display:-webkit-box;
+  min-height:28px;
+  max-height:56px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.store-card .store-body p{
+  display:-webkit-box;
+  min-height:60px;
+  max-height:60px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+}
+.store-card .store-tags{min-height:55px;max-height:55px;overflow:hidden}
+.store-card .store-contact-list{min-height:38px}
+.store-card .store-actions{margin-top:auto}
+
+.part-option-card{display:flex;flex-direction:column}
+.part-option-body{display:flex;flex:1;flex-direction:column}
+.part-option-body h3{
+  display:-webkit-box;
+  min-height:42px;
+  max-height:42px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.part-option-body>p{
+  display:-webkit-box;
+  min-height:32px;
+  max-height:32px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.part-option-body .option-bottom{margin-top:auto}
+.part-option-body .option-compatibility{min-height:40px}
+.part-option-body .source-link{margin-top:10px}
+
+.rent-unit-card-v3{align-self:stretch}
+.rent-unit-body-v3{display:flex;flex-direction:column}
+.rent-unit-body-v3 h3{min-height:31px}
+.rent-unit-body-v3 p{min-height:48px}
+.rent-unit-body-v3 .btn,.rent-unit-body-v3>a:last-child{margin-top:auto}

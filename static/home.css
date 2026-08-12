@@ -307,3 +307,49 @@
 .pi-card,.pi-category-card,.pi-store-card,.pi-unit-card,.pi-flash-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
 .pi-card:focus-within,.pi-category-card:focus-visible,.pi-store-card:focus-within,.pi-unit-card:focus-within,.pi-flash-card:focus-within{border-color:rgba(255,90,0,.42);box-shadow:0 18px 40px rgba(8,31,59,.11),0 0 0 3px rgba(255,90,0,.10)}
 @media (prefers-reduced-motion:reduce){.pi-card,.pi-category-card,.pi-store-card,.pi-unit-card,.pi-flash-card,.pi-hero-art>img,.pi-pc-art img{transition:none !important}.pi-card:hover,.pi-category-card:hover,.pi-store-card:hover,.pi-unit-card:hover,.pi-flash-card:hover,.pi-hero-main:hover .pi-hero-art>img,.pi-pc-card:hover .pi-pc-art img{transform:none !important}}
+
+/* Mantem conteudo, preco e CTA das ofertas rigorosamente alinhados. */
+.pi-flash-grid{align-items:stretch}
+.pi-flash-card{height:auto !important}
+.pi-flash-body{
+  grid-template-rows:auto 39px 36px 58px 44px;
+  height:100%;
+  min-height:260px;
+  align-content:initial;
+}
+.pi-flash-body h3{
+  display:-webkit-box;
+  min-height:39px;
+  max-height:39px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.pi-flash-body p{
+  display:-webkit-box;
+  min-height:36px !important;
+  max-height:36px;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.pi-flash-price{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(48px,.68fr);
+  align-items:end;
+  min-height:58px;
+}
+.pi-flash-price strong{font-size:clamp(1rem,1.1vw,1.18rem) !important;white-space:nowrap}
+.pi-flash-price span{
+  display:-webkit-box;
+  max-height:32px;
+  overflow:hidden;
+  line-height:1.25;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.pi-flash-body>.pi-button{align-self:end;min-height:44px;height:44px;margin-top:0}
+@media(max-width:719px){
+  .pi-flash-body{grid-template-rows:auto 39px 36px 54px 44px;min-height:256px}
+  .pi-flash-price{min-height:54px}
+}
