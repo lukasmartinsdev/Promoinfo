@@ -244,3 +244,19 @@
 @media(max-width:719px){
   .pi-flash-card{flex:0 0 78% !important;width:78% !important;min-width:78% !important}
 }
+
+/* Mantém a arte do card "Monte seu PC" integralmente dentro do bloco. */
+@media (min-width:1181px){
+  .pi-pc-card{padding-bottom:0}
+  .pi-pc-copy{padding:16px 20px 4px}
+  .pi-pc-copy h2{margin:9px 0 5px;font-size:2rem}
+  .pi-pc-copy p{margin-bottom:10px;line-height:1.35}
+  .pi-pc-art{min-height:140px;margin:2px 16px 12px !important}
+  .pi-pc-art img{width:76% !important;max-height:138px !important}
+}
+
+@media (max-width:620px){
+  .pi-pc-card{padding-bottom:0}
+  .pi-pc-art{min-height:176px;margin-bottom:16px !important}
+  .pi-pc-art img{width:82% !important;max-height:168px !important}
+}
